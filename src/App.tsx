@@ -2,6 +2,7 @@ import { useState } from 'react'
 import BottomNav, { type TabKey } from './components/BottomNav'
 import FriendsRoom from './screens/FriendsRoom'
 import Story from './screens/Story'
+import Frequency, { type FrequencyStep } from './screens/Frequency'
 import { MOMENTS } from './data/moments'
 
 function ComingSoon({ label }: { label: string }) {
@@ -14,6 +15,8 @@ function ComingSoon({ label }: { label: string }) {
 
 export default function App() {
   const [tab, setTab] = useState<TabKey>('friends')
+  /** 주파수 탭 안에서 몇 번째 화면인지. 첫 화면이 아니면 탭바를 숨겨요. */
+  const [freqStep, setFreqStep] = useState<FrequencyStep>('home')
   /** 열려 있는 스토리(Lucky Moments 카드). 열려 있으면 탭바 없이 스토리 화면만 보여요. */
   const [storyId, setStoryId] = useState<string | null>(null)
   const [enterFrom, setEnterFrom] = useState<'left' | 'right' | undefined>()
@@ -46,8 +49,16 @@ export default function App() {
       {tab === 'friends' && <FriendsRoom onOpenMoment={(id) => openStory(id)} />}
       {tab === 'home' && <ComingSoon label="홈" />}
       {tab === 'myluck' && <ComingSoon label="내 행운" />}
-      {tab === 'frequency' && <ComingSoon label="주파수" />}
-      <BottomNav active={tab} onChange={setTab} />
+      {tab === 'frequency' && <Frequency step={freqStep} onStepChange={setFreqStep} />}
+      {!(tab === 'frequency' && freqStep !== 'home') && (
+        <BottomNav
+          active={tab}
+          onChange={(t) => {
+            setTab(t)
+            setFreqStep('home')
+          }}
+        />
+      )}
     </div>
   )
 }
