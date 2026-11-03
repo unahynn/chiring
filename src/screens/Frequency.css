@@ -33,6 +33,7 @@
   line-height: 1.2;
   letter-spacing: -0.2px;
   color: #b8b8b8;
+  pointer-events: none; /* 제목이 닫기(X) 버튼을 가리지 않게 */
 }
 
 .freq__close {
@@ -847,15 +848,21 @@
   transform-origin: 50% 50%;
 }
 
+/* 빛 번짐을 카드 가까이로 좁히고(402×297 → 382×276) 약하게 */
+.compose__glow {
+  left: 10px;
+  top: 246px;
+  width: 382px;
+  height: 276px;
+}
+
 @keyframes glow-breathe {
   0%,
   100% {
-    opacity: 0.8;
-    transform: scale(0.99);
+    opacity: 0.4;
   }
   50% {
-    opacity: 1;
-    transform: scale(1.03);
+    opacity: 0.6;
   }
 }
 
@@ -906,7 +913,7 @@
 /* 필요한 기운 카드: 기운 색으로 빛나고, 안쪽 빛이 천천히 움직여요 */
 .energy-card {
   isolation: isolate;
-  box-shadow: 0 0 20px 4px var(--glow);
+  box-shadow: 0 0 12px 1px var(--glow);
   animation:
     card-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     card-glow 3s ease-in-out 0.6s infinite;
@@ -929,12 +936,10 @@
 @keyframes card-glow {
   0%,
   100% {
-    box-shadow: 0 0 20px 4px var(--glow);
+    box-shadow: 0 0 10px 0 color-mix(in srgb, var(--glow) 70%, transparent);
   }
   50% {
-    box-shadow:
-      0 0 34px 10px var(--glow),
-      0 0 70px 6px color-mix(in srgb, var(--glow) 40%, transparent);
+    box-shadow: 0 0 18px 2px var(--glow);
   }
 }
 

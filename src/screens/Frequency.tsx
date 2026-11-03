@@ -43,7 +43,7 @@ const FRIENDS: Friend[] = [
     avatarBg: '#d1d7de',
     layers: [{ src: avatarSumin, style: { left: -26, top: -17, width: 92, height: 92 } }],
   },
-  { id: 'hyeoni', name: 'hyeoni', callName: '현이', need: 'fire', avatarBg: '#a40003', layers: [] },
+  { id: 'hyeoni', name: 'hyeoni', callName: '다현이', need: 'fire', avatarBg: '#a40003', layers: [] },
   {
     id: 'nahyun',
     name: 'Nahyun',
@@ -90,6 +90,11 @@ export default function Frequency({ step, onStepChange }: Props) {
   const [picked, setPicked] = useState<'me' | 'friend' | null>(null)
   const [friendId, setFriendId] = useState<string | null>(null)
   const friend = FRIENDS.find((f) => f.id === friendId)
+  /** 누구를 위한 기운인지: 나(Me) 또는 고른 친구(Friend) */
+  const [mode, setMode] = useState<'me' | 'friend'>('friend')
+  const isMe = mode === 'me'
+  /** 화면 문구에 들어갈 대상. 나를 위한 기운이면 '나' */
+  const target = isMe ? { callName: '나', need: undefined } : friend
 
   // 내용 입력 → 키워드 선택
   const [text, setText] = useState('')
@@ -121,7 +126,7 @@ export default function Frequency({ step, onStepChange }: Props) {
   const [sent, setSent] = useState(false)
   const swipeX = useRef<number | null>(null)
   const swiped = useRef(false)
-  const energy = pickEnergy(text, picks, friend?.need)
+  const energy = pickEnergy(text, picks, target?.need)
 
   // 기운 생성중 → 잠시 뒤 카드 선택 화면으로
   useEffect(() => {
@@ -187,7 +192,7 @@ export default function Frequency({ step, onStepChange }: Props) {
     )
   }
 
-  if (step === 'compose' && friend) {
+  if (step === 'compose' && target) {
     // 따옴표가 없으면 앞뒤로 붙여서 디자인처럼 “ ” 안에 보여줘요
     const t = text.trim()
     const display = `${/^[“"]/.test(t) ? '' : '“'}${t}${/[”"]$/.test(t) ? '' : '”'}`
@@ -198,9 +203,19 @@ export default function Frequency({ step, onStepChange }: Props) {
           <CloseButton onClick={() => onStepChange('home')} />
         </header>
         <h1 className="freq__title freq__title--friend">
-          {friend.callName}한테
-          <br />
-          어떤 기운을 보내줄까?
+          {isMe ? (
+            <>
+              지금 나에게는
+              <br />
+              어떤 기운이 필요할까?
+            </>
+          ) : (
+            <>
+              {target.callName}한테
+              <br />
+              어떤 기운을 보내줄까?
+            </>
+          )}
         </h1>
         <img className="compose__glow" src={cardGlow} alt="" />
         <div className="compose__shine" aria-hidden />
@@ -221,19 +236,19 @@ export default function Frequency({ step, onStepChange }: Props) {
               rows={Math.min(4, Math.max(1, text.split('\n').length))}
               onChange={(e) => setText(e.target.value)}
               onBlur={() => setEditing(false)}
-              placeholder="친구에게 필요한 상황을 적어주세요"
+              placeholder={isMe ? '요즘 나는 어떤 상태인지 적어주세요' : '친구에게 필요한 상황을 적어주세요'}
               maxLength={80}
             />
           ) : hasText ? (
             <p className="compose__text">{display}</p>
           ) : (
-            <span className="compose__placeholder">탭하여 내용을 입력해주세요</span>
+            <span className="compose__placeholder">{isMe ? '탭하여 요즘 내 상황을 적어주세요' : '탭하여 내용을 입력해주세요'}</span>
           )}
         </div>
 
         {hasText && !editing && (
           <section className="keywords">
-            <h2 className="keywords__q">어떤 마음을 전해주고 싶어?</h2>
+            <h2 className="keywords__q">{isMe ? '어떤 마음을 채우고 싶어?' : '어떤 마음을 전해주고 싶어?'}</h2>
             <div className="keywords__chips">
               {keywordOptions.map((k) => (
                 <button key={k} className={`chip${picks.includes(k) ? ' is-on' : ''}`} onClick={() => togglePick(k)} aria-pressed={picks.includes(k)}>
@@ -268,7 +283,7 @@ export default function Frequency({ step, onStepChange }: Props) {
         )}
 
         <div className="freq__actions">
-          <button className="freq__btn freq__btn--prev" onClick={() => onStepChange('friend')}>
+          <button className="freq__btn freq__btn--prev" onClick={() => onStepChange(isMe ? 'home' : 'friend')}>
             이전
           </button>
           <button
@@ -284,8 +299,8 @@ export default function Frequency({ step, onStepChange }: Props) {
     )
   }
 
-  if (step === 'result' && friend) {
-    const card = energyCard(energy, friend.callName, text)
+  if (step === 'result' && target) {
+    const card = energyCard(energy, target.callName, text)
     const bg = `url("data:image/svg+xml;utf8,${encodeURIComponent(
       `<svg viewBox='0 0 306 401' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect width='100%' height='100%' fill='url(#g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(25.2 31.254 -23.85 18.576 54 105.16)'>${card.stops
         .map((c, i) => `<stop stop-color='${c}' offset='${i / 4}'/>`)
@@ -298,7 +313,7 @@ export default function Frequency({ step, onStepChange }: Props) {
           <CloseButton onClick={() => onStepChange('home')} />
         </header>
         <h1 className="freq__title freq__title--friend">
-          지금 {friend.callName}에게
+          지금 {isMe ? '나' : target.callName}에게
           <br />
           <em style={{ color: card.color }}>필요한 기운</em>은...
         </h1>
@@ -326,7 +341,7 @@ export default function Frequency({ step, onStepChange }: Props) {
     )
   }
 
-  if (step === 'loading' && friend) {
+  if (step === 'loading' && target) {
     const [c1, c2, c3] = LOADING_COLORS[energy]
     return (
       <div className="freq loading" style={{ ['--c1' as string]: c1, ['--c2' as string]: c2, ['--c3' as string]: c3 }}>
@@ -335,7 +350,7 @@ export default function Frequency({ step, onStepChange }: Props) {
         <div className="loading__blob loading__blob--c" />
         <StatusBar />
         <h1 className="loading__title">
-          {friend.callName}를 위한
+          {target.callName}를 위한
           <br />
           기운 생성중<span className="loading__dots"><i>·</i><i>·</i><i>·</i></span>
         </h1>
@@ -344,14 +359,14 @@ export default function Frequency({ step, onStepChange }: Props) {
     )
   }
 
-  if (step === 'cards' && friend) {
+  if (step === 'cards' && target) {
     const go = (i: number) => setCardIndex(Math.max(0, Math.min(SIGNAL_CARDS.length - 1, i)))
     return (
       <div className="freq">
         <StatusBar />
         <header className="freq__gnb">
           <CloseButton onClick={() => onStepChange('home')} />
-          <span className="freq__gnb-title freq__gnb-title--white">주파수 선물하기</span>
+          <span className="freq__gnb-title freq__gnb-title--white">{isMe ? '나의 주파수' : '주파수 선물하기'}</span>
         </header>
         {/* 글자 테두리(검정)는 그림 그대로, 글자 색만 기운 색으로 칠해요 */}
         <div className="signal__title" role="img" aria-label="Lucky signal">
@@ -408,14 +423,14 @@ export default function Frequency({ step, onStepChange }: Props) {
     )
   }
 
-  if (step === 'message' && friend) {
+  if (step === 'message' && target) {
     const card = SIGNAL_CARDS[cardIndex]
     return (
       <div className="freq">
         <StatusBar />
         <header className="freq__gnb">
           <CloseButton onClick={() => onStepChange('cards')} />
-          <span className="freq__gnb-title freq__gnb-title--white">주파수 선물하기</span>
+          <span className="freq__gnb-title freq__gnb-title--white">{isMe ? '나의 주파수' : '주파수 선물하기'}</span>
         </header>
         <img className="gift__card" src={card.src} alt={card.label} />
         <textarea
@@ -423,7 +438,7 @@ export default function Frequency({ step, onStepChange }: Props) {
           className="gift__message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={`${friend.callName}에게 한마디 남겨줘`}
+          placeholder={isMe ? '나에게 해주고 싶은 말을 남겨줘' : `${target.callName}에게 한마디 남겨줘`}
           maxLength={60}
           rows={2}
         />
@@ -432,16 +447,16 @@ export default function Frequency({ step, onStepChange }: Props) {
           disabled={!message.trim()}
           onClick={() => setSent(true)}
         >
-          기운 보내기
+          {isMe ? '기운 채우기' : '기운 보내기'}
         </button>
         {sent && (
           <div className="gift__sent" role="dialog" aria-label="보내기 완료">
             <div className="gift__sent-box">
               <img src={card.src} alt="" />
               <p>
-                {friend.callName}에게
+                {isMe ? '나에게' : `${target.callName}에게`}
                 <br />
-                기운을 보냈어요!
+                {isMe ? '기운을 채웠어요!' : '기운을 보냈어요!'}
               </p>
               <button
                 className="freq__btn freq__btn--wide gift__sent-btn"
@@ -467,10 +482,15 @@ export default function Frequency({ step, onStepChange }: Props) {
   // step === 'home'
   const choose = (who: 'me' | 'friend') => {
     setPicked(who)
+    if (who !== mode) {
+      resetCompose()
+      setMode(who)
+    }
     // 박스 색이 바뀌는 걸 잠깐 보여주고 다음 화면으로
     window.setTimeout(() => {
       setPicked(null)
-      onStepChange('friend')
+      // 나를 위한 기운은 친구 선택 없이 바로 내용 입력으로
+      onStepChange(who === 'me' ? 'compose' : 'friend')
     }, 380)
   }
 
