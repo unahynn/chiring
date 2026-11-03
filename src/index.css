@@ -7,8 +7,6 @@
   --pink: #ffa1f7;
   --dot-active: #ff3fd2;
   --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  /* 피그마: ITC Avant Garde Gothic Condensed Bold (유료 폰트) → 비슷한 무료 폰트로 대체 */
-  --font-display: 'Barlow Condensed', 'Pretendard', sans-serif;
   color-scheme: dark;
 }
 

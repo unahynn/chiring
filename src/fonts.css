@@ -1,0 +1,25 @@
+/* Pretendard: 디자인에서 쓰는 한글 폰트를 프로젝트 안에 직접 넣어서 어디서든 같은 글꼴로 보여요 */
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 400;
+  font-display: swap;
+  src: url('../node_modules/pretendard/dist/web/static/woff2-subset/Pretendard-Regular.subset.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 500;
+  font-display: swap;
+  src: url('../node_modules/pretendard/dist/web/static/woff2-subset/Pretendard-Medium.subset.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 600;
+  font-display: swap;
+  src: url('../node_modules/pretendard/dist/web/static/woff2-subset/Pretendard-SemiBold.subset.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 700;
+  font-display: swap;
+  src: url('../node_modules/pretendard/dist/web/static/woff2-subset/Pretendard-Bold.subset.woff2') format('woff2');
+}

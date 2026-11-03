@@ -1,19 +1,26 @@
 import { useRef, useState } from 'react'
 import StatusBar from '../components/StatusBar'
+import { CaretLeftIcon, CloverIcon } from '../components/icons'
+import luckyTalkTitle from '../assets/svg/lucky-talk.svg'
+import luckyMomentsTitle from '../assets/svg/lucky-moments.svg'
 import roomLeft from '../assets/friends/room-left.png'
 import roomCenter from '../assets/friends/room-center.png'
 import roomRight from '../assets/friends/room-right.png'
-import moment1 from '../assets/friends/moment-1.png'
-import moment2 from '../assets/friends/moment-2.png'
-import moment3 from '../assets/friends/moment-3.png'
-import avatarUnahynn from '../assets/friends/avatar-unahynn.png'
-import avatarSsu from '../assets/friends/avatar-ssu.png'
-import avatar3 from '../assets/friends/avatar-3.png'
+import ghostLeft from '../assets/friends/ghost-left.png'
+import ghostRight from '../assets/friends/ghost-right.png'
+import moment1 from '../assets/friends/moment-1.jpg'
+import moment2 from '../assets/friends/moment-2.jpg'
+import moment3 from '../assets/friends/moment-3.jpg'
+import avatarUnahynn from '../assets/friends/avatar-unahynn.jpg'
+import avatarSsu from '../assets/friends/avatar-ssu.jpg'
+import avatar3 from '../assets/friends/avatar-3.jpg'
 import './FriendsRoom.css'
 
 type Room = {
   id: string
   title: string
+  /** 제목 옆 클로버 아이콘 */
+  clover?: boolean
   members: string
   unread: number
   image: string
@@ -24,15 +31,34 @@ type Room = {
 // 나중에 서버/DB에서 받아올 데이터. 지금은 더미 데이터예요.
 const ROOMS: Room[] = [
   { id: 'r1', title: '액운 반사단', members: '민지님 외 3명', unread: 3, image: roomLeft },
-  { id: 'r2', title: '행운 공구방 ✾', members: '수민님 외 2명', unread: 8, image: roomCenter, gradientBaked: true },
+  { id: 'r2', title: '행운 공구방', clover: true, members: '수민님 외 2명', unread: 8, image: roomCenter, gradientBaked: true },
   { id: 'r3', title: 'LuckyClub', members: '권님 외 4명', unread: 2, image: roomRight },
 ]
 
-type Moment = { id: string; name: string; avatar: string; image: string }
+type Moment = {
+  id: string
+  name: string
+  avatar: string
+  /** 아바타 원본 이미지가 원 안에서 어디에 보일지 (피그마 크롭 그대로) */
+  avatarStyle?: React.CSSProperties
+  image: string
+}
 
 const MOMENTS: Moment[] = [
-  { id: 'm1', name: 'Unahynn', avatar: avatarUnahynn, image: moment1 },
-  { id: 'm2', name: 'SSU', avatar: avatarSsu, image: moment2 },
+  {
+    id: 'm1',
+    name: 'Unahynn',
+    avatar: avatarUnahynn,
+    avatarStyle: { width: 75, height: 42, left: -44, top: -1, maxWidth: 'none' },
+    image: moment1,
+  },
+  {
+    id: 'm2',
+    name: 'SSU',
+    avatar: avatarSsu,
+    avatarStyle: { width: '107.03%', height: '112.5%', left: '-3.05%', top: '-9.66%', maxWidth: 'none' },
+    image: moment2,
+  },
   { id: 'm3', name: 'Minhee', avatar: avatar3, image: moment3 },
 ]
 
@@ -44,27 +70,32 @@ export default function FriendsRoom() {
 
       <header className="gnb">
         <button className="gnb__back" aria-label="뒤로가기">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden>
-            <path d="M17.5 5.25 8.75 14l8.75 8.75" stroke="#fff" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <CaretLeftIcon />
         </button>
         <h1 className="gnb__title">행운방</h1>
       </header>
 
       <section className="lucky-talk">
-        <h2 className="display-title display-title--lg">Lucky Talk</h2>
+        <h2 className="title-img">
+          <img src={luckyTalkTitle} alt="Lucky Talk" width={135.35} height={36.16} />
+        </h2>
         <p className="lucky-talk__desc">친구들과 운세를 보며 이야기를 나눠봐요</p>
         <RoomCarousel rooms={ROOMS} />
       </section>
 
       <section className="lucky-moments">
-        <h2 className="display-title display-title--md">Lucky Moments</h2>
+        <h2 className="title-img">
+          <img src={luckyMomentsTitle} alt="Lucky Moments" width={190.1} height={32.54} />
+        </h2>
         <ul className="moments">
           {MOMENTS.map((m) => (
             <li key={m.id} className="moment">
               <img className="moment__photo" src={m.image} alt={`${m.name}의 행운 순간`} />
+              <div className="moment__shade" />
               <div className="moment__user">
-                <img className="moment__avatar" src={m.avatar} alt="" />
+                <span className="moment__avatar">
+                  <img src={m.avatar} alt="" style={m.avatarStyle} />
+                </span>
                 <span className="moment__name">{m.name}</span>
               </div>
             </li>
@@ -95,9 +126,9 @@ function RoomCarousel({ rooms }: { rooms: Room[] }) {
           else if (dx < -40) go(1)
         }}
       >
-        {/* 뒤에 깔린 회색 카드 (장식) */}
-        <div className="carousel__ghost carousel__ghost--left" />
-        <div className="carousel__ghost carousel__ghost--right" />
+        {/* 맨 뒤에 깔린 작은 카드 */}
+        <img className="carousel__ghost carousel__ghost--left" src={ghostLeft} alt="" draggable={false} />
+        <img className="carousel__ghost carousel__ghost--right" src={ghostRight} alt="" draggable={false} />
 
         {rooms.map((room, i) => {
           // -1: 왼쪽, 0: 가운데, 1: 오른쪽
@@ -116,7 +147,10 @@ function RoomCarousel({ rooms }: { rooms: Room[] }) {
               <span className="room-card__badge">{room.unread}</span>
               <div className="room-card__info">
                 <span className="room-card__members">{room.members}</span>
-                <span className="room-card__title">{room.title}</span>
+                <span className="room-card__title">
+                  {room.title}
+                  {room.clover && <CloverIcon />}
+                </span>
               </div>
             </button>
           )
