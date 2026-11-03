@@ -1,0 +1,106 @@
+.sheet-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.sheet-layer__dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.62);
+  animation: sheet-dim-in 0.28s ease backwards;
+}
+
+.sheet-layer--light .sheet-layer__dim {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 60px 60px 0 0;
+  animation: sheet-up 0.42s cubic-bezier(0.2, 0.9, 0.25, 1) backwards;
+  transition: transform 0.25s ease;
+  touch-action: pan-y;
+}
+
+.sheet--dark {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.sheet--light {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 -12px 60px rgba(255, 255, 255, 0.14);
+}
+
+.sheet__header {
+  flex: none;
+  touch-action: none;
+  cursor: grab;
+}
+
+.sheet__overhang {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  touch-action: none;
+}
+
+.sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.sheet__body::-webkit-scrollbar {
+  display: none;
+}
+
+.sheet-layer.is-closing .sheet-layer__dim {
+  animation: sheet-dim-out 0.26s ease both;
+}
+
+.sheet-layer.is-closing .sheet {
+  animation: sheet-down 0.26s ease-in both;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-dim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-dim-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet,
+  .sheet-layer__dim {
+    animation-duration: 0.01s !important;
+  }
+}
