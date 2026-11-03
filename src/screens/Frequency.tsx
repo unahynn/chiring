@@ -5,9 +5,6 @@ import friendTitle from '../assets/frequency/title-friend.png'
 import cardGlow from '../assets/frequency/card-glow.png'
 import luckySignalStroke from '../assets/frequency/lucky-signal-stroke.png'
 import luckySignalFill from '../assets/frequency/lucky-signal-fill.png'
-import signalCard1 from '../assets/frequency/card-1.webp'
-import signalCard2 from '../assets/frequency/card-2.webp'
-import signalCard3 from '../assets/frequency/card-3.webp'
 import avatarDayun from '../assets/frequency/avatar-dayun.jpg'
 import avatarSsu from '../assets/frequency/avatar-ssu.jpg'
 import avatarNahyun from '../assets/frequency/avatar-nahyun.jpg'
@@ -65,11 +62,21 @@ const FRIENDS: Friend[] = [
 ]
 
 /** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') */
-const SIGNAL_CARDS = [
-  { id: 'c1', src: signalCard1, label: '미련 폭파 기운' },
-  { id: 'c2', src: signalCard2, label: '연락 말고 그냥 자 주파수' },
-  { id: 'c3', src: signalCard3, label: 'BYE BYE EX' },
-]
+// 카드 그림: assets/frequency/card-{기운}-{1·2·3}.webp
+const CARD_IMAGES = import.meta.glob<string>('../assets/frequency/card-*.webp', { eager: true, import: 'default' })
+const cardSrc = (energy: EnergyType, n: number) => CARD_IMAGES[`../assets/frequency/card-${energy}-${n}.webp`]
+
+/** 기운별 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') */
+const CARD_LABELS: Record<EnergyType, [string, string, string]> = {
+  water: ['미련 폭파 기운', '연락 말고 그냥 자 주파수', 'BYE BYE EX'],
+  wood: ['새출발 풀충전', 'Let It Bloom!', '합격 싹 틔우는 기운'],
+  metal: ['적게 일하고 많이 받는 기운', '지갑닫는 주파수', 'Saving mode ON'],
+  fire: ['Just Move! Move! Move!', '가만히 있어도 살 10kg 빠지는 주파수', '10000 칼로리 태워주는 기운'],
+  earth: ['일단 진정 기운', 'Build It Up!', '차곡차곡 쌓아올리기'],
+}
+
+const signalCards = (energy: EnergyType) =>
+  CARD_LABELS[energy].map((label, i) => ({ id: `${energy}-${i + 1}`, src: cardSrc(energy, i + 1), label }))
 
 /** 기운 생성중 화면의 움직이는 그라데이션 색 (기운마다 다르게) */
 const LOADING_COLORS: Record<EnergyType, [string, string, string]> = {
@@ -136,6 +143,7 @@ export default function Frequency({ step, onStepChange }: Props) {
   }, [step, onStepChange])
 
   const resetCompose = () => {
+    setCardIndex(0)
     setText('')
     setPicks([])
     setCustomKeywords([])
@@ -365,7 +373,7 @@ export default function Frequency({ step, onStepChange }: Props) {
   }
 
   if (step === 'cards' && target) {
-    const go = (i: number) => setCardIndex(Math.max(0, Math.min(SIGNAL_CARDS.length - 1, i)))
+    const go = (i: number) => setCardIndex(Math.max(0, Math.min(2, i)))
     return (
       <div className="freq">
         <StatusBar />
@@ -400,7 +408,7 @@ export default function Frequency({ step, onStepChange }: Props) {
             else if (dx > 40) go(cardIndex - 1)
           }}
         >
-          {SIGNAL_CARDS.map((c, i) => {
+          {signalCards(energy).map((c, i) => {
             const off = i - cardIndex
             const pos = off === 0 ? 'center' : off === -1 ? 'left' : off === 1 ? 'right' : off < 0 ? 'gone-left' : 'gone-right'
             return (
@@ -411,7 +419,7 @@ export default function Frequency({ step, onStepChange }: Props) {
           })}
         </div>
         <div className="signal__dots">
-          {SIGNAL_CARDS.map((c, i) => (
+          {signalCards(energy).map((c, i) => (
             <button key={c.id} className={i === cardIndex ? 'is-on' : ''} onClick={() => go(i)} aria-label={`${i + 1}번째 카드`} />
           ))}
         </div>
@@ -429,7 +437,7 @@ export default function Frequency({ step, onStepChange }: Props) {
   }
 
   if (step === 'message' && target) {
-    const card = SIGNAL_CARDS[cardIndex]
+    const card = signalCards(energy)[cardIndex]
     return (
       <div className="freq">
         <StatusBar />
