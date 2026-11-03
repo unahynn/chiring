@@ -1,17 +1,21 @@
-import { useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import StatusBar from '../components/StatusBar'
 import meTitle from '../assets/frequency/title-me.png'
 import friendTitle from '../assets/frequency/title-friend.png'
 import cardGlow from '../assets/frequency/card-glow.png'
+import luckySignal from '../assets/frequency/lucky-signal.png'
+import signalCard1 from '../assets/frequency/card-1.webp'
+import signalCard2 from '../assets/frequency/card-2.webp'
+import signalCard3 from '../assets/frequency/card-3.webp'
 import avatarDayun from '../assets/frequency/avatar-dayun.jpg'
 import avatarSsu from '../assets/frequency/avatar-ssu.jpg'
 import avatarNahyun from '../assets/frequency/avatar-nahyun.jpg'
 import avatarYujin from '../assets/frequency/avatar-yujin.jpg'
 import avatarSumin from '../assets/friends/avatar-sumin.jpg'
-import { energyCard, pickEnergy, suggestKeywords } from '../data/energy'
+import { energyCard, pickEnergy, suggestKeywords, type EnergyType } from '../data/energy'
 import './Frequency.css'
 
-export type FrequencyStep = 'home' | 'friend' | 'compose' | 'result'
+export type FrequencyStep = 'home' | 'friend' | 'compose' | 'result' | 'loading' | 'cards' | 'message'
 
 /** 아바타 원 안에 겹쳐 그릴 사진들 (피그마 크롭 그대로, 44px 원 기준) */
 type Layer = { src: string; style?: CSSProperties }
@@ -61,6 +65,22 @@ const FRIENDS: Friend[] = [
   { id: 'kwon', name: 'Kwon', callName: '권이', need: '화 (火)', dot: '#ffa1f7', avatarBg: '#8ec2ff', layers: [] },
 ]
 
+/** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') */
+const SIGNAL_CARDS = [
+  { id: 'c1', src: signalCard1, label: '미련 폭파 기운' },
+  { id: 'c2', src: signalCard2, label: '연락 말고 그냥 자 주파수' },
+  { id: 'c3', src: signalCard3, label: 'BYE BYE EX' },
+]
+
+/** 기운 생성중 화면의 움직이는 그라데이션 색 (기운마다 다르게) */
+const LOADING_COLORS: Record<EnergyType, [string, string, string]> = {
+  water: ['#6a2bd9', '#ff39c7', '#39caff'],
+  fire: ['#c4166f', '#ff39c7', '#ffb36b'],
+  wood: ['#1f7a63', '#3ee8a8', '#aaf4ff'],
+  metal: ['#5a6b12', '#cefb6a', '#fff6a8'],
+  earth: ['#7a3a12', '#ff8a3d', '#ffd6a8'],
+}
+
 type Props = {
   step: FrequencyStep
   onStepChange: (step: FrequencyStep) => void
@@ -95,6 +115,21 @@ export default function Frequency({ step, onStepChange }: Props) {
     setKeywordDraft('')
     setWritingKeyword(false)
   }
+
+  // 카드 선택 · 메세지
+  const [cardIndex, setCardIndex] = useState(0)
+  const [message, setMessage] = useState('')
+  const [sent, setSent] = useState(false)
+  const swipeX = useRef<number | null>(null)
+  const swiped = useRef(false)
+  const energy = pickEnergy(text, picks)
+
+  // 기운 생성중 → 잠시 뒤 카드 선택 화면으로
+  useEffect(() => {
+    if (step !== 'loading') return
+    const t = window.setTimeout(() => onStepChange('cards'), 3200)
+    return () => window.clearTimeout(t)
+  }, [step, onStepChange])
 
   const resetCompose = () => {
     setText('')
@@ -280,10 +315,132 @@ export default function Frequency({ step, onStepChange }: Props) {
           <button className="freq__btn freq__btn--prev" onClick={() => onStepChange('compose')}>
             이전
           </button>
-          <button className="freq__btn freq__btn--next" onClick={() => {}}>
+          <button className="freq__btn freq__btn--next" onClick={() => onStepChange('loading')}>
             주파수 만들기
           </button>
         </div>
+        <div className="freq__indicator" />
+      </div>
+    )
+  }
+
+  if (step === 'loading' && friend) {
+    const [c1, c2, c3] = LOADING_COLORS[energy]
+    return (
+      <div className="freq loading" style={{ ['--c1' as string]: c1, ['--c2' as string]: c2, ['--c3' as string]: c3 }}>
+        <div className="loading__blob loading__blob--a" />
+        <div className="loading__blob loading__blob--b" />
+        <div className="loading__blob loading__blob--c" />
+        <StatusBar />
+        <h1 className="loading__title">
+          {friend.callName}를 위한
+          <br />
+          기운 생성중<span className="loading__dots"><i>·</i><i>·</i><i>·</i></span>
+        </h1>
+        <div className="freq__indicator loading__indicator" />
+      </div>
+    )
+  }
+
+  if (step === 'cards' && friend) {
+    const go = (i: number) => setCardIndex(Math.max(0, Math.min(SIGNAL_CARDS.length - 1, i)))
+    return (
+      <div className="freq">
+        <StatusBar />
+        <header className="freq__gnb">
+          <CloseButton onClick={() => onStepChange('home')} />
+          <span className="freq__gnb-title freq__gnb-title--white">주파수 선물하기</span>
+        </header>
+        <img className="signal__title" src={luckySignal} alt="Lucky signal" />
+        <div
+          className="signal__stage"
+          onPointerDown={(e) => {
+            swipeX.current = e.clientX
+            swiped.current = false
+          }}
+          onPointerUp={(e) => {
+            if (swipeX.current === null) return
+            const dx = e.clientX - swipeX.current
+            swipeX.current = null
+            if (Math.abs(dx) > 40) swiped.current = true // 넘긴 직후의 '클릭'은 무시
+            if (dx < -40) go(cardIndex + 1)
+            else if (dx > 40) go(cardIndex - 1)
+          }}
+        >
+          {SIGNAL_CARDS.map((c, i) => {
+            const off = i - cardIndex
+            const pos = off === 0 ? 'center' : off === -1 ? 'left' : off === 1 ? 'right' : off < 0 ? 'gone-left' : 'gone-right'
+            return (
+              <button key={c.id} className={`signal-card signal-card--${pos}`} onClick={() => !swiped.current && go(i)} aria-label={c.label}>
+                <img src={c.src} alt="" draggable={false} />
+              </button>
+            )
+          })}
+        </div>
+        <div className="signal__dots">
+          {SIGNAL_CARDS.map((c, i) => (
+            <button key={c.id} className={i === cardIndex ? 'is-on' : ''} onClick={() => go(i)} aria-label={`${i + 1}번째 카드`} />
+          ))}
+        </div>
+        <button className="freq__btn freq__btn--wide" onClick={() => onStepChange('message')}>
+          선택
+        </button>
+        <div className="freq__indicator" />
+      </div>
+    )
+  }
+
+  if (step === 'message' && friend) {
+    const card = SIGNAL_CARDS[cardIndex]
+    return (
+      <div className="freq">
+        <StatusBar />
+        <header className="freq__gnb">
+          <CloseButton onClick={() => onStepChange('cards')} />
+          <span className="freq__gnb-title freq__gnb-title--white">주파수 선물하기</span>
+        </header>
+        <img className="gift__card" src={card.src} alt={card.label} />
+        <textarea
+          id="gift-message"
+          className="gift__message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder={`${friend.callName}에게 한마디 남겨줘`}
+          maxLength={60}
+          rows={2}
+        />
+        <button
+          className="freq__btn freq__btn--wide"
+          disabled={!message.trim()}
+          onClick={() => setSent(true)}
+        >
+          기운 보내기
+        </button>
+        {sent && (
+          <div className="gift__sent" role="dialog" aria-label="보내기 완료">
+            <div className="gift__sent-box">
+              <img src={card.src} alt="" />
+              <p>
+                {friend.callName}에게
+                <br />
+                기운을 보냈어요!
+              </p>
+              <button
+                className="freq__btn freq__btn--wide gift__sent-btn"
+                onClick={() => {
+                  setSent(false)
+                  setMessage('')
+                  setCardIndex(0)
+                  resetCompose()
+                  setFriendId(null)
+                  onStepChange('home')
+                }}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        )}
         <div className="freq__indicator" />
       </div>
     )

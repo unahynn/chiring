@@ -524,3 +524,291 @@
   letter-spacing: -0.56px;
   white-space: nowrap;
 }
+
+.freq__gnb-title--white {
+  color: #fff;
+}
+
+/* ---------- 기운 생성중: 기운 색 그라데이션이 천천히 움직여요 ---------- */
+.loading {
+  background: #121212;
+}
+
+.loading__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.85;
+  will-change: transform;
+}
+
+.loading__blob--a {
+  left: -300px;
+  top: -260px;
+  width: 640px;
+  height: 640px;
+  background: var(--c1);
+  animation: blob-a 6s ease-in-out infinite alternate;
+}
+
+.loading__blob--b {
+  left: -40px;
+  top: 520px;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle at 40% 40%, var(--c2), transparent 70%);
+  animation: blob-b 5s ease-in-out infinite alternate;
+}
+
+.loading__blob--c {
+  left: 120px;
+  top: 640px;
+  width: 520px;
+  height: 520px;
+  background: var(--c3);
+  opacity: 0.7;
+  animation: blob-c 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes blob-a {
+  to {
+    transform: translate(120px, 140px) scale(1.15);
+  }
+}
+
+@keyframes blob-b {
+  to {
+    transform: translate(-140px, -160px) scale(1.2);
+  }
+}
+
+@keyframes blob-c {
+  to {
+    transform: translate(-200px, -120px) scale(0.85);
+  }
+}
+
+.loading__title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 135px;
+  text-align: center;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -1.28px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.loading__dots i {
+  font-style: normal;
+  animation: dot-blink 1.2s infinite;
+}
+
+.loading__dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading__dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-blink {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+.loading__indicator {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading__blob {
+    animation: none;
+  }
+}
+
+/* ---------- 주파수 카드 선택 ---------- */
+.signal__title {
+  position: absolute;
+  left: 79.63px;
+  top: 150.11px;
+  width: 242.61px;
+  height: 67.98px;
+}
+
+.signal__stage {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 302px;
+  height: 352px;
+  touch-action: pan-y;
+}
+
+/* 카드 그림에는 그림자 여백(12px)이 포함되어 있어서 350×377로 놓아요 */
+.signal-card {
+  position: absolute;
+  left: 26px;
+  top: -12px;
+  width: 350px;
+  height: 377px;
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.signal-card img {
+  width: 100%;
+  height: 100%;
+}
+
+.signal-card--center {
+  z-index: 3;
+}
+
+/* 옆 카드: 피그마 276×298 (0.847배), 가운데에서 186px 떨어짐 */
+.signal-card--left,
+.signal-card--right {
+  z-index: 1;
+}
+
+.signal-card--left {
+  transform: translateX(-161px) scale(0.847);
+}
+
+.signal-card--right {
+  transform: translateX(161px) scale(0.847);
+}
+
+.signal-card--gone-left,
+.signal-card--gone-right {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.signal-card--gone-left {
+  transform: translateX(-400px) scale(0.7);
+}
+
+.signal-card--gone-right {
+  transform: translateX(400px) scale(0.7);
+}
+
+.signal__dots {
+  position: absolute;
+  left: 181px;
+  top: 686px;
+  display: flex;
+  gap: 8px;
+}
+
+.signal__dots button {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4f4f4f;
+  transition: background 0.3s;
+}
+
+.signal__dots button.is-on {
+  background: #ff26b7;
+}
+
+.freq__btn--wide {
+  left: 20px;
+  top: 784px;
+  width: 362px;
+  background: #f4f2f4;
+  color: #000;
+}
+
+.freq__btn--wide:disabled {
+  opacity: 0.4;
+}
+
+/* ---------- 선물 메세지 ---------- */
+.gift__card {
+  position: absolute;
+  left: 72.1px; /* 241×260 카드 + 그림자 여백 */
+  top: 142.1px;
+  width: 258.7px;
+  height: 278.7px;
+  max-width: none;
+}
+
+.gift__message {
+  position: absolute;
+  left: 37px;
+  top: 439px;
+  width: 328px;
+  height: 86px;
+  padding: 20px 28px;
+  border-radius: 40px;
+  border: 1.6px solid rgba(255, 255, 255, 0.5);
+  background: #1a1a1a;
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.6px;
+  text-align: center;
+  word-break: keep-all;
+  resize: none;
+  outline: 0;
+}
+
+.gift__message::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.gift__message:focus {
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.gift__sent {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 10, 10, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: freq-in 0.3s ease-out;
+}
+
+.gift__sent-box {
+  position: relative;
+  width: 362px;
+  height: 520px;
+  text-align: center;
+}
+
+.gift__sent-box img {
+  width: 220px;
+  margin: 0 auto;
+  animation: card-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gift__sent-box p {
+  margin-top: 20px;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -1px;
+}
+
+.gift__sent-btn {
+  left: 0;
+  top: auto;
+  bottom: 0;
+}
