@@ -37,18 +37,19 @@
   position: absolute;
   left: 50%;
   top: 46.63px;
-  width: 217px;
+  min-width: 217px;
   height: 39px;
-  margin-left: -108px;
+  padding: 0 29px;
+  transform: translateX(-50%);
   border-radius: 45px;
   background: #fff;
   color: #000;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 500;
-  letter-spacing: -0.8px;
+  letter-spacing: -1.05px;
   white-space: nowrap;
 }
 
@@ -95,8 +96,8 @@
   -webkit-backdrop-filter: blur(6px);
   color: #000;
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
+  font-weight: 600;
+  letter-spacing: -0.52px;
   line-height: 25px;
   white-space: nowrap;
   pointer-events: none;
@@ -226,4 +227,76 @@
   font-size: 14px;
   white-space: nowrap;
   animation: sticker-pop 0.3s ease-out;
+}
+
+/* 끌고 있는 스티커 */
+.sticker.is-ghost {
+  z-index: 20;
+  pointer-events: none;
+}
+
+.sticker.is-ghost .sticker__art {
+  transform: translate(-50%, -50%) scale(1.15);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+}
+
+.energy-btn {
+  touch-action: none;
+  cursor: grab;
+}
+
+/* ---------- 메시지 입력 중: 스토리가 작아지면서 위로 ---------- */
+.story__photo,
+.story__author,
+.story__message,
+.story__send,
+.energy-btn,
+.story__hint {
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    right 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.35s,
+    opacity 0.25s;
+}
+
+/* 피그마: 사진 362×442 → 265.4×324 (0.733배), 위치 top 82.5 */
+.story.is-typing .story__photo {
+  transform-origin: 50% 0;
+  transform: translateY(-24.72px) scale(0.733);
+}
+
+/* 작성자: 아바타 35 → 29, top 564.5 → 423.5 */
+.story.is-typing .story__author {
+  transform: translateY(-141px) scale(0.83);
+}
+
+.story.is-typing .energy-btn,
+.story.is-typing .story__hint {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 입력창: top 505, 높이 50, 반투명 */
+.story.is-typing .story__message {
+  top: 505px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.19);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+
+.story.is-typing .story__message input {
+  font-size: 17px;
+  padding-left: 22px;
+  color: #fff;
+}
+
+.story.is-typing .story__send {
+  top: 5px;
+  right: 5px;
+  width: 40px;
+  height: 40px;
 }

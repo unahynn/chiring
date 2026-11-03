@@ -53,6 +53,11 @@ export default function Story({ moment, onBack }: Props) {
   const [justAdded, setJustAdded] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [toast, setToast] = useState<string | null>(null)
+  /** 메시지 입력 중이면 스토리가 작아지면서 위로 올라가요 */
+  const [typing, setTyping] = useState(false)
+  /** 하단 버튼에서 끌고 있는 스티커 (화면 좌표 기준) */
+  const [ghost, setGhost] = useState<{ type: StickerType; x: number; y: number } | null>(null)
+  const storyRef = useRef<HTMLDivElement>(null)
   const photoRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ id: string; dx: number; dy: number } | null>(null)
 
@@ -61,19 +66,32 @@ export default function Story({ moment, onBack }: Props) {
     window.setTimeout(() => setToast(null), 1800)
   }
 
-  const addSticker = (type: StickerType) => {
-    // 캡션과 겹치지 않는 사진 안쪽 아무 곳에 붙여요. 붙인 뒤에는 끌어서 옮길 수 있어요.
-    const x = 60 + Math.random() * (PHOTO_W - 120)
-    const y = 130 + Math.random() * (PHOTO_H - 230)
+  /** 화면 좌표 → 사진 안 좌표 (사진이 작아져 있어도 맞게 계산) */
+  const toPhotoXY = (clientX: number, clientY: number) => {
+    const r = photoRef.current!.getBoundingClientRect()
+    const k = r.width / PHOTO_W
+    return { x: (clientX - r.left) / k, y: (clientY - r.top) / k, inside: clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom }
+  }
+
+  const toStoryXY = (clientX: number, clientY: number) => {
+    const r = storyRef.current!.getBoundingClientRect()
+    return { x: clientX - r.left, y: clientY - r.top }
+  }
+
+  const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
+
+  /** 끌어온 스티커를 사진 위에 놓았을 때 */
+  const dropSticker = (type: StickerType, clientX: number, clientY: number) => {
+    const p = toPhotoXY(clientX, clientY)
+    if (!p.inside) return // 사진 밖에 놓으면 취소
     const id = `me-${Date.now()}`
-    setStickers((prev) => [...prev, { id, type, from: ME, x, y }])
+    setStickers((prev) => [...prev, { id, type, from: ME, x: clamp(p.x, 20, PHOTO_W - 20), y: clamp(p.y, 20, PHOTO_H - 20) }])
     setJustAdded(id)
   }
 
-  const toPhotoXY = (clientX: number, clientY: number) => {
-    const r = photoRef.current!.getBoundingClientRect()
-    return { x: clientX - r.left, y: clientY - r.top }
-  }
+  // 닉네임은 한 사람당 하나만: 그 사람이 마지막으로 붙인 스티커에만 이름표를 달아요
+  const labelOwner = new Map<string, string>()
+  for (const st of stickers) labelOwner.set(st.from, st.id)
 
   const sendMessage = () => {
     if (!message.trim()) return
@@ -82,7 +100,7 @@ export default function Story({ moment, onBack }: Props) {
   }
 
   return (
-    <div className="story">
+    <div className={`story${typing ? ' is-typing' : ''}`} ref={storyRef}>
       <StatusBar />
       <button className="story__back" aria-label="뒤로가기" onClick={onBack}>
         <CaretLeftIcon />
@@ -94,8 +112,8 @@ export default function Story({ moment, onBack }: Props) {
         onPointerMove={(e) => {
           if (!drag.current) return
           const { x, y } = toPhotoXY(e.clientX, e.clientY)
-          const nx = Math.min(PHOTO_W - 20, Math.max(20, x - drag.current.dx))
-          const ny = Math.min(PHOTO_H - 20, Math.max(20, y - drag.current.dy))
+          const nx = clamp(x - drag.current.dx, 20, PHOTO_W - 20)
+          const ny = clamp(y - drag.current.dy, 20, PHOTO_H - 20)
           const id = drag.current.id
           setStickers((prev) => prev.map((s) => (s.id === id ? { ...s, x: nx, y: ny } : s)))
         }}
@@ -120,7 +138,7 @@ export default function Story({ moment, onBack }: Props) {
             }}
           >
             <StickerArt type={s.type} />
-            <span className="sticker__label">{s.from}</span>
+            {labelOwner.get(s.from) === s.id && <span className="sticker__label">{s.from}</span>}
           </div>
         ))}
       </div>
@@ -137,14 +155,33 @@ export default function Story({ moment, onBack }: Props) {
             key={b.type}
             className="energy-btn"
             style={{ left: b.cx - b.size / 2, top: b.cy - b.size / 2, width: b.size, height: b.size }}
-            onClick={() => addSticker(b.type)}
-            aria-label={`${b.label} 보내기`}
+            aria-label={`${b.label}: 끌어서 사진에 붙이기`}
+            onPointerDown={(e) => {
+              e.preventDefault()
+              e.currentTarget.setPointerCapture(e.pointerId)
+              setGhost({ type: b.type, ...toStoryXY(e.clientX, e.clientY) })
+            }}
+            onPointerMove={(e) => {
+              if (!ghost) return
+              setGhost({ type: b.type, ...toStoryXY(e.clientX, e.clientY) })
+            }}
+            onPointerUp={(e) => {
+              if (ghost) dropSticker(b.type, e.clientX, e.clientY)
+              setGhost(null)
+            }}
+            onPointerCancel={() => setGhost(null)}
           >
             <img src={art.src} alt="" width={art.w * b.iconScale} height={art.h * b.iconScale} draggable={false} />
           </button>
         )
       })}
       <p className="story__hint">눌러서 기운 보내기</p>
+
+      {ghost && (
+        <div className="sticker is-ghost" style={{ left: ghost.x, top: ghost.y }}>
+          <StickerArt type={ghost.type} />
+        </div>
+      )}
 
       <form
         className="story__message"
@@ -157,10 +194,17 @@ export default function Story({ moment, onBack }: Props) {
           id="story-message"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onFocus={() => setTyping(true)}
+          onBlur={() => setTyping(false)}
           placeholder="메세지 남기기"
           autoComplete="off"
         />
-        <button type="submit" className="story__send" aria-label="보내기">
+        <button
+          type="submit"
+          className="story__send"
+          aria-label="보내기"
+          onPointerDown={(e) => e.preventDefault() /* 눌러도 입력창 포커스가 유지되게 */}
+        >
           <svg width="30" height="31" viewBox="0 0 30 31" fill="none" aria-hidden>
             <path
               d="M23.9478 14.1808C23.8616 14.2671 23.7592 14.3356 23.6466 14.3823C23.5339 14.429 23.4131 14.453 23.2911 14.453C23.1692 14.453 23.0484 14.429 22.9357 14.3823C22.823 14.3356 22.7207 14.2671 22.6345 14.1808L15.8661 7.4113L15.8661 25.5898C15.8661 25.8359 15.7684 26.072 15.5943 26.2461C15.4202 26.4201 15.1842 26.5179 14.938 26.5179C14.6919 26.5179 14.4558 26.4201 14.2817 26.2461C14.1077 26.072 14.0099 25.8359 14.0099 25.5898L14.0099 7.4113L7.24154 14.1808C7.06739 14.355 6.83118 14.4528 6.58489 14.4528C6.3386 14.4528 6.1024 14.355 5.92824 14.1808C5.75409 14.0067 5.65625 13.7705 5.65625 13.5242C5.65625 13.2779 5.75409 13.0417 5.92824 12.8675L14.2814 4.51439C14.3676 4.4281 14.4699 4.35964 14.5826 4.31294C14.6953 4.26623 14.816 4.24219 14.938 4.24219C15.06 4.24219 15.1808 4.26623 15.2934 4.31294C15.4061 4.35964 15.5085 4.4281 15.5947 4.51439L23.9478 12.8675C24.0341 12.9537 24.1025 13.0561 24.1492 13.1688C24.196 13.2814 24.22 13.4022 24.22 13.5242C24.22 13.6461 24.196 13.7669 24.1492 13.8796C24.1025 13.9923 24.0341 14.0946 23.9478 14.1808Z"

@@ -65,6 +65,7 @@ export const MOMENTS: Moment[] = [
     name: 'Minhee',
     avatar: avatarMinhee,
     photo: momentMinhee,
+    caption: '하ㅏ 월요일 1교시 에바야 ㅠ',
     stickers: [],
   },
   {
