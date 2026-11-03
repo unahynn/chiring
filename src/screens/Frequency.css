@@ -149,20 +149,23 @@
 
 /* ---------- 친구 선택 ---------- */
 .friend-list {
-  list-style: none;
-}
-
-.friend-list li {
   position: absolute;
-  left: 20px;
+  left: 0;
+  right: 0;
+  top: 271px;
+  bottom: 0;
+  padding: 0 20px 100px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
-.friend-list li:nth-child(1) { top: 271px; }
-.friend-list li:nth-child(2) { top: 358px; }
-.friend-list li:nth-child(3) { top: 445px; }
-.friend-list li:nth-child(4) { top: 532px; }
-.friend-list li:nth-child(5) { top: 619px; }
-.friend-list li:nth-child(6) { top: 706px; }
+.friend-list::-webkit-scrollbar {
+  display: none;
+}
 
 .friend-row {
   position: relative;
@@ -643,6 +646,30 @@
   height: 67.98px;
 }
 
+.signal__title img {
+  width: 100%;
+  height: 100%;
+}
+
+/* 채우기 글자: 테두리 안쪽 (피그마 기준 8.34px 안쪽, 225.9 × 51.3) */
+.signal__title-fill {
+  position: absolute;
+  left: 8.34px;
+  top: 8.34px;
+  width: 225.92px;
+  height: 51.3px;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  transition: background 0.4s;
+  animation: signal-glow 3s ease-in-out infinite;
+}
+
+@keyframes signal-glow {
+  50% {
+    filter: brightness(1.15) saturate(1.1);
+  }
+}
+
 .signal__stage {
   position: absolute;
   left: 0;
@@ -811,4 +838,125 @@
   left: 0;
   top: auto;
   bottom: 0;
+}
+
+/* ---------- 은은하게 움직이며 빛나는 그라데이션 ---------- */
+/* 내용 입력 카드: 빛 번짐이 천천히 숨쉬듯 */
+.compose__glow {
+  animation: glow-breathe 3.2s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(0.99);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+}
+
+/* 카드 위로 흐르는 부드러운 빛 */
+.compose__card {
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.compose__card::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  background:
+    radial-gradient(closest-side at 30% 35%, rgba(255, 255, 255, 0.45), transparent 70%),
+    radial-gradient(closest-side at 75% 70%, rgba(170, 244, 255, 0.35), transparent 70%);
+  animation: shine-drift 7s ease-in-out infinite alternate;
+}
+
+.compose__card {
+  background-size: 100% 140%;
+  animation: grad-flow 6s ease-in-out infinite alternate;
+}
+
+@keyframes grad-flow {
+  from {
+    background-position: 50% 0%;
+  }
+  to {
+    background-position: 50% 100%;
+  }
+}
+
+@keyframes shine-drift {
+  from {
+    transform: translate(-8%, -6%) rotate(0deg);
+  }
+  to {
+    transform: translate(10%, 8%) rotate(25deg);
+  }
+}
+
+.compose__shine {
+  display: none;
+}
+
+/* 필요한 기운 카드: 기운 색으로 빛나고, 안쪽 빛이 천천히 움직여요 */
+.energy-card {
+  isolation: isolate;
+  box-shadow: 0 0 20px 4px var(--glow);
+  animation:
+    card-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    card-glow 3s ease-in-out 0.6s infinite;
+}
+
+.energy-card > *:not(.energy-card__light) {
+  z-index: 1;
+}
+
+.energy-card__light {
+  position: absolute;
+  inset: -30%;
+  z-index: 0;
+  background: radial-gradient(closest-side at 35% 35%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 70%);
+  mix-blend-mode: soft-light;
+  animation: light-orbit 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes card-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px 4px var(--glow);
+  }
+  50% {
+    box-shadow:
+      0 0 34px 10px var(--glow),
+      0 0 70px 6px color-mix(in srgb, var(--glow) 40%, transparent);
+  }
+}
+
+@keyframes light-orbit {
+  0% {
+    transform: translate(-10%, -8%);
+  }
+  50% {
+    transform: translate(18%, 12%);
+  }
+  100% {
+    transform: translate(4%, 26%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .compose__glow,
+  .compose__card,
+  .compose__card::before,
+  .energy-card,
+  .energy-card__light,
+  .signal__title-fill {
+    animation: none;
+  }
 }

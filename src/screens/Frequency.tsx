@@ -3,7 +3,8 @@ import StatusBar from '../components/StatusBar'
 import meTitle from '../assets/frequency/title-me.png'
 import friendTitle from '../assets/frequency/title-friend.png'
 import cardGlow from '../assets/frequency/card-glow.png'
-import luckySignal from '../assets/frequency/lucky-signal.png'
+import luckySignalStroke from '../assets/frequency/lucky-signal-stroke.png'
+import luckySignalFill from '../assets/frequency/lucky-signal-fill.png'
 import signalCard1 from '../assets/frequency/card-1.webp'
 import signalCard2 from '../assets/frequency/card-2.webp'
 import signalCard3 from '../assets/frequency/card-3.webp'
@@ -42,7 +43,7 @@ const FRIENDS: Friend[] = [
     avatarBg: '#d1d7de',
     layers: [{ src: avatarSumin, style: { left: -26, top: -17, width: 92, height: 92 } }],
   },
-  { id: 'ssu', name: 'SSU', callName: '수진이', need: 'water', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
+  { id: 'hyeoni', name: 'hyeoni', callName: '현이', need: 'fire', avatarBg: '#a40003', layers: [] },
   {
     id: 'nahyun',
     name: 'Nahyun',
@@ -59,7 +60,8 @@ const FRIENDS: Friend[] = [
     avatarBg: '#d1d7de',
     layers: [{ src: avatarYujin, style: { left: 0, top: '-12.41%', width: '100%', height: '177.78%', objectFit: 'fill' } }],
   },
-  { id: 'kwon', name: 'Kwon', callName: '권이', need: 'fire', avatarBg: '#8ec2ff', layers: [] },
+  { id: 'kwon', name: 'Kwon', callName: '권이', need: 'earth', avatarBg: '#8ec2ff', layers: [] },
+  { id: 'ssu', name: 'SSU', callName: '수진이', need: 'earth', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
 ]
 
 /** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') */
@@ -201,6 +203,7 @@ export default function Frequency({ step, onStepChange }: Props) {
           어떤 기운을 보내줄까?
         </h1>
         <img className="compose__glow" src={cardGlow} alt="" />
+        <div className="compose__shine" aria-hidden />
         <div
           className={`compose__card${editing ? ' is-editing' : ''}`}
           onClick={() => {
@@ -299,7 +302,8 @@ export default function Frequency({ step, onStepChange }: Props) {
           <br />
           <em style={{ color: card.color }}>필요한 기운</em>은...
         </h1>
-        <div className="energy-card" style={{ backgroundImage: bg, boxShadow: `0 0 20px 4px ${card.color}` }}>
+        <div className="energy-card" style={{ backgroundImage: bg, ['--glow' as string]: card.color }}>
+          <span className="energy-card__light" aria-hidden />
           <p className="energy-card__sub">{card.subtitle}</p>
           <p className="energy-card__title">{card.title}</p>
           <p className="energy-card__desc">{card.desc}</p>
@@ -349,7 +353,18 @@ export default function Frequency({ step, onStepChange }: Props) {
           <CloseButton onClick={() => onStepChange('home')} />
           <span className="freq__gnb-title freq__gnb-title--white">주파수 선물하기</span>
         </header>
-        <img className="signal__title" src={luckySignal} alt="Lucky signal" />
+        {/* 글자 테두리(검정)는 그림 그대로, 글자 색만 기운 색으로 칠해요 */}
+        <div className="signal__title" role="img" aria-label="Lucky signal">
+          <img src={luckySignalStroke} alt="" />
+          <span
+            className="signal__title-fill"
+            style={{
+              background: ENERGY_META[energy].dot,
+              WebkitMaskImage: `url(${luckySignalFill})`,
+              maskImage: `url(${luckySignalFill})`,
+            }}
+          />
+        </div>
         <div
           className="signal__stage"
           onPointerDown={(e) => {
@@ -380,9 +395,14 @@ export default function Frequency({ step, onStepChange }: Props) {
             <button key={c.id} className={i === cardIndex ? 'is-on' : ''} onClick={() => go(i)} aria-label={`${i + 1}번째 카드`} />
           ))}
         </div>
-        <button className="freq__btn freq__btn--wide" onClick={() => onStepChange('message')}>
-          선택
-        </button>
+        <div className="freq__actions">
+          <button className="freq__btn freq__btn--prev" onClick={() => onStepChange('result')}>
+            이전
+          </button>
+          <button className="freq__btn freq__btn--next" onClick={() => onStepChange('message')}>
+            선택
+          </button>
+        </div>
         <div className="freq__indicator" />
       </div>
     )

@@ -13,7 +13,7 @@ export const ENERGY_META: Record<EnergyType, { label: string; dot: string }> = {
   wood: { label: '나무 (木)', dot: '#5effc7' },
   metal: { label: '금 (金)', dot: '#cefb6a' },
   fire: { label: '화 (火)', dot: '#ffa1f7' },
-  earth: { label: '흙 (土)', dot: '#ff8a3d' },
+  earth: { label: '흙 (土)', dot: '#ff5500' },
 }
 
 /** 내용에 들어간 단어 → 추천 키워드 (위에서부터 먼저 맞는 순서대로) */
@@ -140,8 +140,8 @@ export function energyCard(type: EnergyType, name: string, text: string): Energy
         title: '흙(土)의 기운',
         desc: `${name}는 지금 쉼이 필요한 상태야.\n아무 생각 없이 푹 잘 수 있도록\n든든한 흙 기운으로 마음을 다지는게 필요해`,
         tags: ['# 흙의 기운', '# 꿀잠 자기', '# 안정감'],
-        color: '#ff8a3d',
-        stops: ['#ffffff', '#ffe2cf', '#ffc59f', '#ffa86e', '#ff8a3d'],
+        color: '#ff5500',
+        stops: ['#ffffff', '#ffd9c4', '#ffb08a', '#ff8350', '#ff5500'],
       }
   }
 }
