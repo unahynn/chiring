@@ -439,7 +439,7 @@ export default function Frequency({ step, onStepChange }: Props) {
   if (step === 'message' && target) {
     const card = signalCards(energy)[cardIndex]
     return (
-      <div className="freq">
+      <div className="freq freq--gift">
         <StatusBar />
         <header className="freq__gnb">
           <CloseButton onClick={() => onStepChange('cards')} />

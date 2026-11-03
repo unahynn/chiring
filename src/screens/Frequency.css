@@ -779,6 +779,52 @@
   max-width: none;
 }
 
+/*
+ * 카드 선택 → 메세지 입력: 고른 카드가 그 자리에서 작아지며 위로 부드럽게 올라가요.
+ * 카드 선택 화면의 가운데 카드 위치(26, 290 · 350×377)에서 시작해
+ * 메세지 화면 위치(72.1, 142.1 · 258.7×278.7)로 이동
+ */
+.freq--gift {
+  animation: none; /* 화면 전체 페이드 대신 카드만 움직이게 */
+}
+
+.freq--gift .gift__card {
+  transform-origin: 0 0;
+  animation: gift-card-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes gift-card-up {
+  from {
+    transform: translate(-46.1px, 147.9px) scale(1.353);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* 나머지(제목·입력칸·버튼)는 카드가 올라가는 동안 살짝 늦게 떠올라요 */
+.freq--gift .freq__gnb-title,
+.freq--gift .gift__message,
+.freq--gift .freq__btn {
+  animation: gift-fade-up 0.5s ease-out 0.3s both;
+}
+
+@keyframes gift-fade-up {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .freq--gift .gift__card,
+  .freq--gift .freq__gnb-title,
+  .freq--gift .gift__message,
+  .freq--gift .freq__btn {
+    animation: none;
+  }
+}
+
 .gift__message {
   position: absolute;
   left: 37px;
