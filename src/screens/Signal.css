@@ -570,89 +570,13 @@
   left: 358px;
 }
 
-/* 배경 그래픽: 출렁이며 작아졌다 퍼지는 것을 반복 → 기운이 전달되는 느낌 */
-.wave {
+/* 배경 그래픽 (SignalWave 캔버스) */
+.signal-wave {
   position: absolute;
   inset: 0;
+  width: 402px;
+  height: 874px;
   pointer-events: none;
-}
-
-.wave__core,
-.wave__ring {
-  position: absolute;
-  left: -65.1px;
-  top: 12.8px;
-  width: 533.2px;
-  height: 947.2px;
-  max-width: none;
-  transform-origin: 50% 47%;
-}
-
-.wave__core {
-  animation:
-    wave-breathe 4.2s ease-in-out infinite,
-    wave-jelly 2.6s ease-in-out infinite;
-}
-
-.wave__ring {
-  opacity: 0;
-  mix-blend-mode: screen;
-  filter: blur(3px);
-  animation: wave-ripple 4.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
-}
-
-.wave__ring--2 {
-  animation-delay: 1.4s;
-}
-
-.wave__ring--3 {
-  animation-delay: 2.8s;
-}
-
-/* 일시정지하면 그래픽도 멈춰요 */
-.sig--listen:not(.is-playing) .wave__core,
-.sig--listen:not(.is-playing) .wave__ring {
-  animation-play-state: paused;
-}
-
-@keyframes wave-breathe {
-  0%,
-  100% {
-    scale: 0.82;
-  }
-  50% {
-    scale: 1.04;
-  }
-}
-
-@keyframes wave-jelly {
-  0%,
-  100% {
-    transform: rotate(0deg) scale(1, 1);
-  }
-  25% {
-    transform: rotate(4deg) scale(1.05, 0.95);
-  }
-  50% {
-    transform: rotate(-2deg) scale(0.95, 1.05);
-  }
-  75% {
-    transform: rotate(3deg) scale(1.03, 0.97);
-  }
-}
-
-@keyframes wave-ripple {
-  0% {
-    opacity: 0;
-    transform: scale(0.55) rotate(-8deg);
-  }
-  25% {
-    opacity: 0.55;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.5) rotate(10deg);
-  }
 }
 
 .listen__percent {
@@ -915,8 +839,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wave__core,
-  .wave__ring,
   .flip__sheen::before,
   .flip::before,
   .sig__bottom-glow,

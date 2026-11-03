@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import StatusBar from '../components/StatusBar'
+import SignalWave from '../components/SignalWave'
 import { CaretLeftIcon, CloverIcon } from '../components/icons'
 import chatCard from '../assets/signal/chat-card.webp'
 import avatarJiwon from '../assets/signal/avatar-jiwon.png'
 import frontCard from '../assets/signal/front-card.webp'
 import titleTodays from '../assets/signal/title-todays.png'
 import titleTodaysLg from '../assets/signal/title-todays-lg.png'
-import listenBlob from '../assets/signal/listen-blob.webp'
 import iconHeart from '../assets/signal/icon-heart.png'
 import iconShare from '../assets/signal/icon-share.png'
 import iconBack5 from '../assets/signal/icon-back5.png'
@@ -200,12 +200,8 @@ export default function Signal({ roomTitle, onExit }: Props) {
     const skip = (sec: number) => setElapsed((e) => Math.max(0, Math.min(DURATION, e + sec)))
     return (
       <div className={`sig sig--listen${playing ? ' is-playing' : ''}`}>
-        <div className="wave" aria-hidden>
-          <img className="wave__ring wave__ring--1" src={listenBlob} alt="" />
-          <img className="wave__ring wave__ring--2" src={listenBlob} alt="" />
-          <img className="wave__ring wave__ring--3" src={listenBlob} alt="" />
-          <img className="wave__core" src={listenBlob} alt="" />
-        </div>
+        {/* 배경 그래픽은 이미지가 아니라 실시간으로 그려요 */}
+        <SignalWave playing={playing} />
         <StatusBar />
         <header className="sig__gnb">
           <CloseBtn
