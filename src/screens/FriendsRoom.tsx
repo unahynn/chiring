@@ -53,9 +53,11 @@ function positionClass(offset: number) {
 type Props = {
   /** Lucky Moments 카드를 누르면 그 친구의 스토리를 열어요 */
   onOpenMoment: (id: string) => void
+  /** 가운데 방 카드를 누르면 채팅방으로 */
+  onOpenRoom: (title: string) => void
 }
 
-export default function FriendsRoom({ onOpenMoment }: Props) {
+export default function FriendsRoom({ onOpenMoment, onOpenRoom }: Props) {
   return (
     <div className="friends">
       <StatusBar />
@@ -69,7 +71,7 @@ export default function FriendsRoom({ onOpenMoment }: Props) {
           <img src={luckyTalkTitle} alt="Lucky Talk" width={135.35} height={36.16} />
         </h2>
         <p className="lucky-talk__desc">친구들과 운세를 보며 이야기를 나눠봐요</p>
-        <RoomCarousel rooms={ROOMS} />
+        <RoomCarousel rooms={ROOMS} onEnter={(room) => onOpenRoom(room.title)} />
       </section>
 
       <section className="lucky-moments">
@@ -95,7 +97,7 @@ export default function FriendsRoom({ onOpenMoment }: Props) {
   )
 }
 
-function RoomCarousel({ rooms }: { rooms: Room[] }) {
+function RoomCarousel({ rooms, onEnter }: { rooms: Room[]; onEnter: (room: Room) => void }) {
   const [active, setActive] = useState(1)
   const startX = useRef<number | null>(null)
   const n = rooms.length
@@ -122,7 +124,7 @@ function RoomCarousel({ rooms }: { rooms: Room[] }) {
             <button
               key={room.id}
               className={`room-card room-card--${pos}`}
-              onClick={() => offset !== 0 && go(offset)}
+              onClick={() => (offset === 0 ? onEnter(room) : go(offset))}
               tabIndex={pos === 'hidden' ? -1 : 0}
               aria-hidden={pos === 'hidden' ? true : undefined}
               aria-label={offset === 0 ? `${room.title} 입장하기` : `${room.title} 보기`}

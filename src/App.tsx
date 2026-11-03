@@ -2,6 +2,7 @@ import { useState } from 'react'
 import BottomNav, { type TabKey } from './components/BottomNav'
 import FriendsRoom from './screens/FriendsRoom'
 import Story from './screens/Story'
+import Signal from './screens/Signal'
 import Frequency, { type FrequencyStep } from './screens/Frequency'
 import { MOMENTS } from './data/moments'
 
@@ -19,6 +20,8 @@ export default function App() {
   const [freqStep, setFreqStep] = useState<FrequencyStep>('home')
   /** 열려 있는 스토리(Lucky Moments 카드). 열려 있으면 탭바 없이 스토리 화면만 보여요. */
   const [storyId, setStoryId] = useState<string | null>(null)
+  /** 열려 있는 채팅방 (Lucky Talk 가운데 카드를 누르면 열려요) */
+  const [chatRoom, setChatRoom] = useState<string | null>(null)
   const [enterFrom, setEnterFrom] = useState<'left' | 'right' | undefined>()
   const storyIndex = MOMENTS.findIndex((m) => m.id === storyId)
   const story = MOMENTS[storyIndex]
@@ -26,6 +29,14 @@ export default function App() {
   const openStory = (id: string | null, from?: 'left' | 'right') => {
     setEnterFrom(from)
     setStoryId(id)
+  }
+
+  if (chatRoom) {
+    return (
+      <div className="phone">
+        <Signal roomTitle={chatRoom} onExit={() => setChatRoom(null)} />
+      </div>
+    )
   }
 
   if (story) {
@@ -46,7 +57,7 @@ export default function App() {
 
   return (
     <div className="phone">
-      {tab === 'friends' && <FriendsRoom onOpenMoment={(id) => openStory(id)} />}
+      {tab === 'friends' && <FriendsRoom onOpenMoment={(id) => openStory(id)} onOpenRoom={setChatRoom} />}
       {tab === 'home' && <ComingSoon label="홈" />}
       {tab === 'myluck' && <ComingSoon label="내 행운" />}
       {tab === 'frequency' && <Frequency step={freqStep} onStepChange={setFreqStep} />}
