@@ -1018,3 +1018,134 @@
     animation: none;
   }
 }
+
+/* =================== 기운 선물 완료 (기운별 참) =================== */
+.gifted {
+  background: #121212;
+  animation: none;
+}
+
+.gifted__bg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 402px;
+  height: auto;
+  max-width: none;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* 두 겹이 서로 다른 속도·방향으로 천천히 일렁여요 */
+.gifted__bg--a {
+  transform-origin: 20% 0;
+  animation: gifted-sway-a 7s ease-in-out infinite alternate;
+}
+
+.gifted__bg--b {
+  transform-origin: 80% 0;
+  animation: gifted-sway-b 9s ease-in-out infinite alternate;
+}
+
+@keyframes gifted-sway-a {
+  0% {
+    transform: translate(-8px, -6px) scale(1.02);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate(10px, 8px) scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes gifted-sway-b {
+  0% {
+    transform: translate(8px, 0) scale(1.06) rotate(1.5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-10px, 10px) scale(1) rotate(-1.5deg);
+    opacity: 0.75;
+  }
+}
+
+.gifted__title {
+  position: absolute;
+  z-index: 2;
+  left: 20px;
+  top: 85px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -1.12px;
+  color: #fff;
+  animation: gift-fade-up 0.6s ease-out 0.2s both;
+}
+
+/* 참: 위에서 떨어져 툭 걸린 뒤, 키링처럼 살랑살랑 흔들려요 */
+.gifted__charm {
+  position: absolute;
+  z-index: 1;
+  animation: charm-drop 0.9s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+.gifted__charm img {
+  width: 100%;
+  height: auto;
+  transform-origin: 50% 10%;
+  animation: charm-swing 3.4s ease-in-out 0.9s infinite;
+}
+
+.gifted__charm--metal { left: 68.6px; top: 328.2px; width: 279.0px; }
+.gifted__charm--wood { left: 64.9px; top: 292.4px; width: 281.2px; }
+.gifted__charm--water { left: 72.8px; top: 314.5px; width: 268.8px; }
+.gifted__charm--earth { left: 72.8px; top: 317.2px; width: 261.3px; }
+.gifted__charm--fire { left: 44.6px; top: 322.3px; width: 312.0px; }
+
+@keyframes charm-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-140px) scale(0.6) rotate(-18deg);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes charm-swing {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-6px) rotate(3deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-6px) rotate(-3deg);
+  }
+}
+
+.gifted__btn {
+  z-index: 2;
+  animation: gift-fade-up 0.5s ease-out 0.5s both;
+}
+
+.gifted__indicator {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gifted__bg,
+  .gifted__charm,
+  .gifted__charm img,
+  .gifted__title,
+  .gifted__btn {
+    animation: none;
+  }
+}

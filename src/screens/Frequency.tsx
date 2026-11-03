@@ -3,6 +3,9 @@ import StatusBar from '../components/StatusBar'
 import meTitle from '../assets/frequency/title-me.png'
 import friendTitle from '../assets/frequency/title-friend.png'
 import cardGlow from '../assets/frequency/card-glow.png'
+// 기운 선물 완료: 기운별 참(키링) + 배경 그라데이션 두 겹
+const CHARM_IMAGES = import.meta.glob<string>('../assets/charm/*.webp', { eager: true, import: 'default' })
+const charmAsset = (name: string) => CHARM_IMAGES[`../assets/charm/${name}.webp`]
 import luckySignalStroke from '../assets/frequency/lucky-signal-stroke.png'
 import luckySignalFill from '../assets/frequency/lucky-signal-fill.png'
 import avatarDayun from '../assets/frequency/avatar-dayun.jpg'
@@ -13,7 +16,7 @@ import avatarSumin from '../assets/friends/avatar-sumin.jpg'
 import { ENERGY_META, energyCard, pickEnergy, suggestKeywords, type EnergyType } from '../data/energy'
 import './Frequency.css'
 
-export type FrequencyStep = 'home' | 'friend' | 'compose' | 'result' | 'loading' | 'cards' | 'message'
+export type FrequencyStep = 'home' | 'friend' | 'compose' | 'result' | 'loading' | 'cards' | 'message' | 'gifted'
 
 /** 아바타 원 안에 겹쳐 그릴 사진들 (피그마 크롭 그대로, 44px 원 기준) */
 type Layer = { src: string; style?: CSSProperties }
@@ -23,6 +26,8 @@ type Friend = {
   name: string
   /** 제목에 들어갈 부르는 이름: "수민이한테 어떤 기운을…" */
   callName: string
+  /** '나현님께'처럼 높여 부를 때 이름 */
+  honorName: string
   /** 오늘 필요한 기운 → 점 색과 글자는 ENERGY_META에서 */
   need: EnergyType
   avatarBg: string
@@ -31,20 +36,22 @@ type Friend = {
 
 // 나중에 서버에서 받아올 친구 목록. 피그마 '주파수 친구 선택' 화면 그대로예요.
 const FRIENDS: Friend[] = [
-  { id: 'dayun', name: 'dayun', callName: '다윤이', need: 'wood', avatarBg: '#d1d7de', layers: [{ src: avatarDayun }] },
+  { id: 'dayun', name: 'dayun', callName: '다윤이', honorName: '다윤', need: 'wood', avatarBg: '#d1d7de', layers: [{ src: avatarDayun }] },
   {
     id: 'sumin',
     name: 'sumin',
     callName: '수민이',
+    honorName: '수민',
     need: 'water',
     avatarBg: '#d1d7de',
     layers: [{ src: avatarSumin, style: { left: -26, top: -17, width: 92, height: 92 } }],
   },
-  { id: 'hyeoni', name: 'hyeoni', callName: '다현이', need: 'fire', avatarBg: '#a40003', layers: [] },
+  { id: 'hyeoni', name: 'hyeoni', callName: '다현이', honorName: '다현', need: 'fire', avatarBg: '#a40003', layers: [] },
   {
     id: 'nahyun',
     name: 'Nahyun',
     callName: '나현이',
+    honorName: '나현',
     need: 'metal',
     avatarBg: '#d1d7de',
     layers: [{ src: avatarSsu }, { src: avatarNahyun, style: { left: -1, top: -16, width: 44, height: 59 } }],
@@ -53,12 +60,13 @@ const FRIENDS: Friend[] = [
     id: 'yujin',
     name: 'yujin',
     callName: '유진이',
+    honorName: '유진',
     need: 'metal',
     avatarBg: '#d1d7de',
     layers: [{ src: avatarYujin, style: { left: 0, top: '-12.41%', width: '100%', height: '177.78%', objectFit: 'fill' } }],
   },
-  { id: 'kwon', name: 'Kwon', callName: '권이', need: 'earth', avatarBg: '#8ec2ff', layers: [] },
-  { id: 'ssu', name: 'SSU', callName: '수진이', need: 'earth', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
+  { id: 'kwon', name: 'Kwon', callName: '민재', honorName: '민재', need: 'earth', avatarBg: '#8ec2ff', layers: [] },
+  { id: 'ssu', name: 'SSU', callName: '수진이', honorName: '수진', need: 'earth', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
 ]
 
 /** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') */
@@ -101,7 +109,7 @@ export default function Frequency({ step, onStepChange }: Props) {
   const [mode, setMode] = useState<'me' | 'friend'>('friend')
   const isMe = mode === 'me'
   /** 화면 문구에 들어갈 대상. 나를 위한 기운이면 '나' */
-  const target = isMe ? { callName: '나', need: undefined } : friend
+  const target = isMe ? { callName: '나', honorName: '나', need: undefined } : friend
 
   // 내용 입력 → 키워드 선택
   const [text, setText] = useState('')
@@ -130,7 +138,6 @@ export default function Frequency({ step, onStepChange }: Props) {
   // 카드 선택 · 메세지
   const [cardIndex, setCardIndex] = useState(0)
   const [message, setMessage] = useState('')
-  const [sent, setSent] = useState(false)
   const swipeX = useRef<number | null>(null)
   const swiped = useRef(false)
   const energy = pickEnergy(text, picks, target?.need)
@@ -458,36 +465,42 @@ export default function Frequency({ step, onStepChange }: Props) {
         <button
           className="freq__btn freq__btn--wide"
           disabled={!message.trim()}
-          onClick={() => setSent(true)}
+          onClick={() => onStepChange('gifted')}
         >
           {isMe ? '기운 채우기' : '기운 보내기'}
         </button>
-        {sent && (
-          <div className="gift__sent" role="dialog" aria-label="보내기 완료">
-            <div className="gift__sent-box">
-              <img src={card.src} alt="" />
-              <p>
-                {isMe ? '나에게' : `${target.callName}에게`}
-                <br />
-                {isMe ? '기운을 채웠어요!' : '기운을 보냈어요!'}
-              </p>
-              <button
-                className="freq__btn freq__btn--wide gift__sent-btn"
-                onClick={() => {
-                  setSent(false)
-                  setMessage('')
-                  setCardIndex(0)
-                  resetCompose()
-                  setFriendId(null)
-                  onStepChange('home')
-                }}
-              >
-                확인
-              </button>
-            </div>
-          </div>
-        )}
         <div className="freq__indicator" />
+      </div>
+    )
+  }
+
+  if (step === 'gifted' && target) {
+    return (
+      <div className={`freq gifted gifted--${energy}`}>
+        {/* 뒤 그라데이션 두 겹이 서로 다르게 천천히 일렁여요 */}
+        <img className="gifted__bg gifted__bg--a" src={charmAsset(`bg-${energy}-a`)} alt="" />
+        <img className="gifted__bg gifted__bg--b" src={charmAsset(`bg-${energy}-b`)} alt="" />
+        <StatusBar />
+        <h1 className="gifted__title">
+          {isMe ? '나에게' : `${target.honorName}님께`}
+          <br />
+          {isMe ? '기운 충전 완료!' : '기운 선물 완료!'}
+        </h1>
+        <div className={`gifted__charm gifted__charm--${energy}`}>
+          <img src={charmAsset(`charm-${energy}`)} alt={`${ENERGY_META[energy].label} 참`} />
+        </div>
+        <button
+          className="freq__btn freq__btn--wide gifted__btn"
+          onClick={() => {
+            setMessage('')
+            resetCompose()
+            setFriendId(null)
+            onStepChange('home')
+          }}
+        >
+          내 키링에 달기
+        </button>
+        <div className="freq__indicator gifted__indicator" />
       </div>
     )
   }
