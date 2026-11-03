@@ -712,6 +712,7 @@
 .signal-card--left,
 .signal-card--right {
   z-index: 1;
+  opacity: 0.6; /* 가운데(선택된) 카드가 아닌 옆 카드는 60% */
 }
 
 .signal-card--left {
