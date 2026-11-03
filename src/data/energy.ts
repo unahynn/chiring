@@ -73,6 +73,7 @@ export type EnergyCard = {
   subtitle: string
   title: string
   desc: string
+  /** 키워드 4개 → 카드에 2개씩 두 줄로 보여요 */
   tags: string[]
   /** 강조색 · 카드 그라데이션 끝색 · 그라데이션 중간색 */
   color: string
@@ -99,7 +100,7 @@ export function energyCard(type: EnergyType, name: string, text: string): Energy
             subtitle: '뜨거워진 마음을\n차분하게 식혀 줄',
             title: '물(水)의 기운',
             desc: `${name}는 지금 마음이 조금 달아올라 있어.\n한 템포 쉬어 가면서\n시원한 물 기운으로 생각을 정리하는게 필요해`,
-            tags: ['# 물의 기운', '# 마음 진정', '# 생각을 비우는'],
+            tags: ['# 물의 기운', '# 마음 진정', '# 생각을 비우는', '# 차분한 하루'],
             color: '#39caff',
             stops: ['#ffffff', '#cdf2ff', '#9ce5ff', '#6ad7ff', '#39caff'],
           }
@@ -109,7 +110,7 @@ export function energyCard(type: EnergyType, name: string, text: string): Energy
         subtitle: '움츠러든 마음에\n불씨를 지펴 줄',
         title: '불(火)의 기운',
         desc: `${name}는 지금 에너지가 조금 식어 있어.\n자신 있게 한 발 내딛을 수 있도록\n뜨거운 불 기운으로 용기를 채우는게 필요해`,
-        tags: ['# 불의 기운', '# 자신감 충전', '# 열정 가득'],
+        tags: ['# 불의 기운', '# 자신감 충전', '# 열정 가득', '# 용기 한 스푼'],
         color: '#ff39c7',
         stops: ['#ffffff', '#ffe0f8', '#ffc0f3', '#ffa1f7', '#ff39c7'],
       }
@@ -119,7 +120,7 @@ export function energyCard(type: EnergyType, name: string, text: string): Energy
         subtitle: '새로운 시작에\n싹을 틔워 줄',
         title: '나무(木)의 기운',
         desc: `${name}는 지금 새 출발이 필요한 때!\n지난 일은 흘려보내고\n쑥쑥 자라는 나무 기운으로 기분을 바꾸는게 필요해`,
-        tags: ['# 나무의 기운', '# 새로운 시작', '# 기분 전환'],
+        tags: ['# 나무의 기운', '# 새로운 시작', '# 기분 전환', '# 쑥쑥 성장'],
         color: '#5effc7',
         stops: ['#ffffff', '#d7fff1', '#aeffe3', '#86ffd5', '#5effc7'],
       }
@@ -129,7 +130,7 @@ export function energyCard(type: EnergyType, name: string, text: string): Energy
         subtitle: '흩어진 운을\n단단하게 모아 줄',
         title: '금(金)의 기운',
         desc: `${name}는 지금 결과가 걸린 중요한 순간!\n흔들리지 않고 끝까지 해낼 수 있도록\n반짝이는 금 기운으로 운을 모으는게 필요해`,
-        tags: ['# 금의 기운', '# 합격 기운', '# 집중력'],
+        tags: ['# 금의 기운', '# 합격 기운', '# 집중력', '# 행운 모으기'],
         color: '#cefb6a',
         stops: ['#ffffff', '#f3fed9', '#e6fdb4', '#dafc8f', '#cefb6a'],
       }
@@ -139,7 +140,7 @@ export function energyCard(type: EnergyType, name: string, text: string): Energy
         subtitle: '지친 몸과 마음을\n포근하게 감싸 줄',
         title: '흙(土)의 기운',
         desc: `${name}는 지금 쉼이 필요한 상태야.\n아무 생각 없이 푹 잘 수 있도록\n든든한 흙 기운으로 마음을 다지는게 필요해`,
-        tags: ['# 흙의 기운', '# 꿀잠 자기', '# 안정감'],
+        tags: ['# 흙의 기운', '# 꿀잠 자기', '# 안정감', '# 푹 쉬기'],
         color: '#ff5500',
         stops: ['#ffffff', '#ffd9c4', '#ffb08a', '#ff8350', '#ff5500'],
       }

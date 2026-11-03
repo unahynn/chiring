@@ -322,9 +322,14 @@ export default function Frequency({ step, onStepChange }: Props) {
           <p className="energy-card__sub">{card.subtitle}</p>
           <p className="energy-card__title">{card.title}</p>
           <p className="energy-card__desc">{card.desc}</p>
+          {/* 키워드는 2개씩 두 줄 */}
           <div className="energy-card__tags">
-            {card.tags.map((t) => (
-              <span key={t}>{t}</span>
+            {[card.tags.slice(0, 2), card.tags.slice(2, 4)].map((row, i) => (
+              <div key={i} className="energy-card__tag-row">
+                {row.map((t) => (
+                  <span key={t}>{t}</span>
+                ))}
+              </div>
             ))}
           </div>
         </div>
