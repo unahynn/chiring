@@ -49,3 +49,40 @@ export function CloverIcon({ size = 17 }: IconProps) {
     </svg>
   )
 }
+
+export function CaretRightIcon({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden>
+      <path d="M7.5 3.75 13.75 10 7.5 16.25" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function CloseIcon({ size = 16 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden>
+      <path d="M2.5 2.5 13.5 13.5M13.5 2.5 2.5 13.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function PencilIcon({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+      <path d="M14.2 2.6a2.2 2.2 0 0 1 3.1 3.1L8 15l-4.3 1.3a.5.5 0 0 1-.6-.6L4.4 11.4l9.8-8.8Z" />
+    </svg>
+  )
+}
+
+export function CameraIcon({ size = 28 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none" aria-hidden>
+      <path
+        d="M4.5 9.5A2.5 2.5 0 0 1 7 7h2.6l1.6-2.2c.3-.4.7-.6 1.2-.6h3.2c.5 0 .9.2 1.2.6L18.4 7H21a2.5 2.5 0 0 1 2.5 2.5V20a2.5 2.5 0 0 1-2.5 2.5H7A2.5 2.5 0 0 1 4.5 20V9.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <circle cx="14" cy="14.6" r="4" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}

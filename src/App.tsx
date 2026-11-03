@@ -4,7 +4,13 @@ import FriendsRoom from './screens/FriendsRoom'
 import Story from './screens/Story'
 import Signal from './screens/Signal'
 import Frequency, { type FrequencyStep } from './screens/Frequency'
+import SajuSetup from './screens/SajuSetup'
+import CharReport from './screens/CharReport'
 import { MOMENTS } from './data/moments'
+import { loadMe, saveMe, type Me, type Profile } from './data/profile'
+
+/** 주소 끝에 ?onboarding 을 붙이면 저장된 정보가 있어도 온보딩부터 다시 볼 수 있어요 (테스트용) */
+const FORCE_ONBOARDING = new URLSearchParams(window.location.search).has('onboarding')
 
 function ComingSoon({ label }: { label: string }) {
   return (
@@ -15,6 +21,10 @@ function ComingSoon({ label }: { label: string }) {
 }
 
 export default function App() {
+  /** 내 프로필 + 사주. 처음 실행이면 null */
+  const [me, setMe] = useState<Me | null>(loadMe)
+  /** 온보딩 단계: 사주 설정 → 캐해 리포트. 끝나면 null (홈) */
+  const [onboarding, setOnboarding] = useState<'setup' | 'report' | null>(() => (FORCE_ONBOARDING || !me?.done ? 'setup' : null))
   const [tab, setTab] = useState<TabKey>('friends')
   /** 주파수 탭 안에서 몇 번째 화면인지. 첫 화면이 아니면 탭바를 숨겨요. */
   const [freqStep, setFreqStep] = useState<FrequencyStep>('home')
@@ -29,6 +39,52 @@ export default function App() {
   const openStory = (id: string | null, from?: 'left' | 'right') => {
     setEnterFrom(from)
     setStoryId(id)
+  }
+
+  const submitProfile = async (profile: Profile) => {
+    // 만세력 계산 라이브러리는 커서 이때만 불러와요
+    const { computeSaju } = await import('./data/sajuCalc')
+    const [y, m, d] = profile.birthDate.split('-').map(Number)
+    const [hh, mm] = profile.birthTime?.split(':').map(Number) ?? []
+    const saju = computeSaju({
+      calendar: profile.calendar,
+      leap: profile.leap,
+      year: y,
+      month: m,
+      day: d,
+      time: profile.birthTime ? { hour: hh, minute: mm } : null,
+    })
+    if (!saju) return
+    const next: Me = { profile, saju, done: false }
+    setMe(next)
+    saveMe(next)
+    setOnboarding('report')
+  }
+
+  const finishOnboarding = () => {
+    if (!me) return
+    const next = { ...me, done: true }
+    setMe(next)
+    saveMe(next)
+    setOnboarding(null)
+    setTab('friends')
+    if (FORCE_ONBOARDING) window.history.replaceState(null, '', window.location.pathname)
+  }
+
+  if (onboarding === 'report' && me) {
+    return (
+      <div className="phone">
+        <CharReport me={me} onBack={() => setOnboarding('setup')} onStart={finishOnboarding} />
+      </div>
+    )
+  }
+
+  if (onboarding) {
+    return (
+      <div className="phone">
+        <SajuSetup initial={me?.profile} onSubmit={submitProfile} />
+      </div>
+    )
   }
 
   if (chatRoom) {
