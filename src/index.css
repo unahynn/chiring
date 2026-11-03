@@ -1,0 +1,69 @@
+:root {
+  --bg: #0e0e0e;
+  --text: #ffffff;
+  --text-80: rgba(255, 255, 255, 0.8);
+  --text-70: rgba(255, 255, 255, 0.7);
+  --muted: #6e767c;
+  --pink: #ffa1f7;
+  --dot-active: #ff3fd2;
+  --font-body: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  /* 피그마: ITC Avant Garde Gothic Condensed Bold (유료 폰트) → 비슷한 무료 폰트로 대체 */
+  --font-display: 'Barlow Condensed', 'Pretendard', sans-serif;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: #1a1a1a;
+  font-family: var(--font-body);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 폰 화면 프레임: 휴대폰에선 꽉 차고, PC에선 가운데 402px 폭으로 보여요 */
+.phone {
+  position: relative;
+  width: 100%;
+  max-width: 402px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--bg);
+  overflow-x: clip;
+}
+
+@media (min-width: 500px) {
+  body {
+    padding: 24px 0;
+  }
+  .phone {
+    min-height: 874px;
+    height: 874px;
+    overflow-y: auto;
+    border-radius: 44px;
+    box-shadow: 0 0 0 10px #2a2a2a, 0 30px 80px rgba(0, 0, 0, 0.5);
+    scrollbar-width: none;
+  }
+  .phone::-webkit-scrollbar {
+    display: none;
+  }
+}

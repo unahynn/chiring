@@ -1,0 +1,16 @@
+.status-bar {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 26px 14px 27px;
+}
+
+.status-bar__time {
+  width: 54px;
+  text-align: center;
+  font-family: -apple-system, 'SF Pro Text', var(--font-body);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.4px;
+}

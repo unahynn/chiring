@@ -1,0 +1,293 @@
+.friends {
+  padding-bottom: 120px; /* 하단 탭바에 가려지지 않도록 */
+}
+
+/* ---------- 상단 GNB ---------- */
+.gnb {
+  position: relative;
+  height: 53px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gnb__back {
+  position: absolute;
+  left: 20px;
+  top: 13px;
+  width: 28px;
+  height: 28px;
+}
+
+.gnb__title {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.44px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---------- 큰 영문 타이틀 ---------- */
+.display-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 0 20px;
+}
+
+.display-title--lg {
+  font-size: 40px;
+  letter-spacing: -3.2px;
+}
+
+.display-title--md {
+  font-size: 36px;
+  letter-spacing: -2.88px;
+}
+
+/* ---------- Lucky Talk ---------- */
+.lucky-talk {
+  padding-top: 12px;
+}
+
+.lucky-talk__desc {
+  margin-top: 6px;
+  padding: 0 20px;
+  font-size: 16px;
+  line-height: 1.3;
+  letter-spacing: -0.64px;
+  color: var(--text-80);
+}
+
+.carousel {
+  margin-top: 28px;
+}
+
+.carousel__stage {
+  position: relative;
+  height: 318px;
+  touch-action: pan-y;
+}
+
+.carousel__ghost {
+  position: absolute;
+  top: 57px;
+  left: 50%;
+  width: 126px;
+  height: 205px;
+  border-radius: 60px;
+  background: rgba(50, 50, 50, 0.89);
+}
+
+.carousel__ghost--left {
+  transform: translateX(calc(-50% - 118px));
+}
+
+.carousel__ghost--right {
+  transform: translateX(calc(-50% + 118px));
+}
+
+.room-card {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 197px;
+  height: 318px;
+  margin-left: -98.5px;
+  border-radius: 60px;
+  overflow: hidden;
+  text-align: center;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.45s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.room-card--center {
+  z-index: 3;
+  transform: translateX(0) scale(1);
+  box-shadow: 3.5px 3.5px 48px rgba(55, 55, 55, 0.25);
+}
+
+.room-card--left,
+.room-card--right {
+  z-index: 2;
+  box-shadow: 3.5px 3.5px 48px rgba(187, 187, 187, 0.25);
+}
+
+/* 피그마: 옆 카드는 162.6 × 262.5 → 가운데 카드의 0.825배 */
+.room-card--left {
+  transform: translateX(-72.5px) scale(0.825);
+}
+
+.room-card--right {
+  transform: translateX(73.3px) scale(0.825);
+}
+
+.room-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.room-card__gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 29.4%, #000 100%);
+  opacity: 0;
+  transition: opacity 0.45s;
+}
+
+.room-card--center .room-card__gradient {
+  opacity: 1;
+}
+
+.room-card__dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  transition: opacity 0.45s;
+}
+
+.room-card--center .room-card__dim {
+  opacity: 0;
+}
+
+.room-card__badge {
+  position: absolute;
+  top: 17.5px;
+  left: 150.5px;
+  width: 21px;
+  height: 21px;
+  border-radius: 100px;
+  background: var(--pink);
+  color: #000;
+  font-family: 'DIN Condensed', var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 22px;
+  box-shadow: 3.5px 3.5px 32px rgba(115, 115, 115, 0.25);
+  transition: opacity 0.3s;
+}
+
+.room-card__info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 218px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.room-card__members {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.56px;
+  color: var(--text-70);
+  transition: opacity 0.3s;
+}
+
+.room-card__title {
+  margin-top: 9px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.88px;
+  white-space: nowrap;
+  color: #fff;
+}
+
+.room-card--left .room-card__title,
+.room-card--right .room-card__title {
+  color: var(--text-80);
+}
+
+.room-card--left .room-card__badge,
+.room-card--right .room-card__badge,
+.room-card--left .room-card__members,
+.room-card--right .room-card__members {
+  opacity: 0;
+}
+
+.carousel__dots {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 19px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #4a4a4a;
+  transition: background 0.3s;
+}
+
+.dot.is-active {
+  background: var(--dot-active);
+}
+
+/* ---------- Lucky Moments ---------- */
+.lucky-moments {
+  margin-top: 26px;
+}
+
+.moments {
+  list-style: none;
+  display: flex;
+  gap: 11.7px;
+  margin-top: 16px;
+  padding: 0 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 20px;
+  scrollbar-width: none;
+}
+
+.moments::-webkit-scrollbar {
+  display: none;
+}
+
+.moment {
+  position: relative;
+  flex: 0 0 159px;
+  height: 260px;
+  border-radius: 32px;
+  overflow: hidden;
+  background: #222;
+  scroll-snap-align: start;
+}
+
+.moment__photo {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  object-position: left top;
+}
+
+.moment__user {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.moment__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 100px;
+}
+
+.moment__name {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.72px;
+}
