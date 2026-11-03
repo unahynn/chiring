@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useMemo, useRef, useState, type CSSProperties } from 'react'
 import StatusBar from '../components/StatusBar'
 import meTitle from '../assets/frequency/title-me.png'
 import friendTitle from '../assets/frequency/title-friend.png'
@@ -8,9 +8,10 @@ import avatarSsu from '../assets/frequency/avatar-ssu.jpg'
 import avatarNahyun from '../assets/frequency/avatar-nahyun.jpg'
 import avatarYujin from '../assets/frequency/avatar-yujin.jpg'
 import avatarSumin from '../assets/friends/avatar-sumin.jpg'
+import { energyCard, pickEnergy, suggestKeywords } from '../data/energy'
 import './Frequency.css'
 
-export type FrequencyStep = 'home' | 'friend' | 'compose'
+export type FrequencyStep = 'home' | 'friend' | 'compose' | 'result'
 
 /** 아바타 원 안에 겹쳐 그릴 사진들 (피그마 크롭 그대로, 44px 원 기준) */
 type Layer = { src: string; style?: CSSProperties }
@@ -38,7 +39,7 @@ const FRIENDS: Friend[] = [
     avatarBg: '#d1d7de',
     layers: [{ src: avatarSumin, style: { left: -26, top: -17, width: 92, height: 92 } }],
   },
-  { id: 'ssu', name: 'SSU', callName: 'SSU', need: '물 (水)', dot: '#13e2ff', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
+  { id: 'ssu', name: 'SSU', callName: '수진이', need: '물 (水)', dot: '#13e2ff', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
   {
     id: 'nahyun',
     name: 'Nahyun',
@@ -71,6 +72,36 @@ export default function Frequency({ step, onStepChange }: Props) {
   const [friendId, setFriendId] = useState<string | null>(null)
   const friend = FRIENDS.find((f) => f.id === friendId)
 
+  // 내용 입력 → 키워드 선택
+  const [text, setText] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [customKeywords, setCustomKeywords] = useState<string[]>([])
+  const [picks, setPicks] = useState<string[]>([])
+  const [writingKeyword, setWritingKeyword] = useState(false)
+  const [keywordDraft, setKeywordDraft] = useState('')
+  const textRef = useRef<HTMLTextAreaElement>(null)
+  const suggested = useMemo(() => suggestKeywords(text), [text])
+  const keywordOptions = [...suggested, ...customKeywords.filter((k) => !suggested.includes(k))]
+  const hasText = text.trim().length > 0
+
+  const togglePick = (k: string) => setPicks((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]))
+
+  const addCustomKeyword = () => {
+    const k = keywordDraft.trim()
+    if (k) {
+      if (!keywordOptions.includes(k)) setCustomKeywords((prev) => [...prev, k])
+      if (!picks.includes(k)) setPicks((prev) => [...prev, k])
+    }
+    setKeywordDraft('')
+    setWritingKeyword(false)
+  }
+
+  const resetCompose = () => {
+    setText('')
+    setPicks([])
+    setCustomKeywords([])
+  }
+
   if (step === 'friend') {
     return (
       <div className="freq">
@@ -90,7 +121,10 @@ export default function Frequency({ step, onStepChange }: Props) {
             <li key={f.id}>
               <button
                 className={`friend-row${f.id === friendId ? ' is-picked' : ''}`}
-                onClick={() => setFriendId(f.id)}
+                onClick={() => {
+                  if (f.id !== friendId) resetCompose()
+                  setFriendId(f.id)
+                }}
                 aria-pressed={f.id === friendId}
               >
                 <span className="friend-row__avatar" style={{ background: f.avatarBg }}>
@@ -120,11 +154,14 @@ export default function Frequency({ step, onStepChange }: Props) {
   }
 
   if (step === 'compose' && friend) {
+    // 따옴표가 없으면 앞뒤로 붙여서 디자인처럼 “ ” 안에 보여줘요
+    const t = text.trim()
+    const display = `${/^[“"]/.test(t) ? '' : '“'}${t}${/[”"]$/.test(t) ? '' : '”'}`
     return (
       <div className="freq">
         <StatusBar />
         <header className="freq__gnb">
-          <CloseButton onClick={() => onStepChange('friend')} />
+          <CloseButton onClick={() => onStepChange('home')} />
         </header>
         <h1 className="freq__title freq__title--friend">
           {friend.callName}한테
@@ -132,9 +169,121 @@ export default function Frequency({ step, onStepChange }: Props) {
           어떤 기운을 보내줄까?
         </h1>
         <img className="compose__glow" src={cardGlow} alt="" />
-        <button className="compose__card">
-          <span>탭하여 내용을 입력해주세요</span>
-        </button>
+        <div
+          className={`compose__card${editing ? ' is-editing' : ''}`}
+          onClick={() => {
+            setEditing(true)
+            window.setTimeout(() => textRef.current?.focus(), 0)
+          }}
+        >
+          {editing ? (
+            <textarea
+              ref={textRef}
+              id="frequency-text"
+              className="compose__input"
+              value={text}
+              rows={Math.min(4, Math.max(1, text.split('\n').length))}
+              onChange={(e) => setText(e.target.value)}
+              onBlur={() => setEditing(false)}
+              placeholder="친구에게 필요한 상황을 적어주세요"
+              maxLength={80}
+            />
+          ) : hasText ? (
+            <p className="compose__text">{display}</p>
+          ) : (
+            <span className="compose__placeholder">탭하여 내용을 입력해주세요</span>
+          )}
+        </div>
+
+        {hasText && !editing && (
+          <section className="keywords">
+            <h2 className="keywords__q">어떤 마음을 전해주고 싶어?</h2>
+            <div className="keywords__chips">
+              {keywordOptions.map((k) => (
+                <button key={k} className={`chip${picks.includes(k) ? ' is-on' : ''}`} onClick={() => togglePick(k)} aria-pressed={picks.includes(k)}>
+                  {k}
+                </button>
+              ))}
+              {writingKeyword ? (
+                <form
+                  className="chip chip--input"
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    addCustomKeyword()
+                  }}
+                >
+                  <input
+                    id="custom-keyword"
+                    autoFocus
+                    value={keywordDraft}
+                    maxLength={10}
+                    onChange={(e) => setKeywordDraft(e.target.value)}
+                    onBlur={addCustomKeyword}
+                    placeholder="키워드 입력"
+                  />
+                </form>
+              ) : (
+                <button className="chip chip--add" onClick={() => setWritingKeyword(true)}>
+                  <span className="chip__plus">+</span>직접 작성하기
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
+        <div className="freq__actions">
+          <button className="freq__btn freq__btn--prev" onClick={() => onStepChange('friend')}>
+            이전
+          </button>
+          <button
+            className="freq__btn freq__btn--next"
+            disabled={!hasText || picks.length === 0}
+            onClick={() => onStepChange('result')}
+          >
+            다음
+          </button>
+        </div>
+        <div className="freq__indicator" />
+      </div>
+    )
+  }
+
+  if (step === 'result' && friend) {
+    const card = energyCard(pickEnergy(text, picks), friend.callName, text)
+    const bg = `url("data:image/svg+xml;utf8,${encodeURIComponent(
+      `<svg viewBox='0 0 306 401' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect width='100%' height='100%' fill='url(#g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(25.2 31.254 -23.85 18.576 54 105.16)'>${card.stops
+        .map((c, i) => `<stop stop-color='${c}' offset='${i / 4}'/>`)
+        .join('')}</radialGradient></defs></svg>`,
+    )}")`
+    return (
+      <div className="freq">
+        <StatusBar />
+        <header className="freq__gnb">
+          <CloseButton onClick={() => onStepChange('home')} />
+        </header>
+        <h1 className="freq__title freq__title--friend">
+          지금 {friend.callName}에게
+          <br />
+          <em style={{ color: card.color }}>필요한 기운</em>은...
+        </h1>
+        <div className="energy-card" style={{ backgroundImage: bg, boxShadow: `0 0 20px 4px ${card.color}` }}>
+          <p className="energy-card__sub">{card.subtitle}</p>
+          <p className="energy-card__title">{card.title}</p>
+          <p className="energy-card__desc">{card.desc}</p>
+          <div className="energy-card__tags">
+            {card.tags.map((t) => (
+              <span key={t}>{t}</span>
+            ))}
+          </div>
+        </div>
+        <div className="freq__actions">
+          <button className="freq__btn freq__btn--prev" onClick={() => onStepChange('compose')}>
+            이전
+          </button>
+          <button className="freq__btn freq__btn--next" onClick={() => {}}>
+            주파수 만들기
+          </button>
+        </div>
         <div className="freq__indicator" />
       </div>
     )
