@@ -8,12 +8,8 @@ import roomCenter from '../assets/friends/room-center.jpg'
 import roomRight from '../assets/friends/room-right.jpg'
 import room4 from '../assets/friends/room-4.jpg'
 import room5 from '../assets/friends/room-5.jpg'
-import moment1 from '../assets/friends/moment-1.jpg'
-import moment2 from '../assets/friends/moment-2.jpg'
-import moment3 from '../assets/friends/moment-3.jpg'
-import avatarUnahynn from '../assets/friends/avatar-unahynn.jpg'
-import avatarSsu from '../assets/friends/avatar-ssu.jpg'
-import avatar3 from '../assets/friends/avatar-3.jpg'
+import Avatar from '../components/Avatar'
+import { MOMENTS } from '../data/moments'
 import './FriendsRoom.css'
 
 type Room = {
@@ -53,35 +49,13 @@ function positionClass(offset: number) {
   return 'hidden'
 }
 
-type Moment = {
-  id: string
-  name: string
-  avatar: string
-  /** 아바타 원본 이미지가 원 안에서 어디에 보일지 (피그마 크롭 그대로) */
-  avatarStyle?: React.CSSProperties
-  image: string
+/** 행운방(친구방) 화면: Lucky Talk 캐러셀 + Lucky Moments */
+type Props = {
+  /** Lucky Moments 카드를 누르면 그 친구의 스토리를 열어요 */
+  onOpenMoment: (id: string) => void
 }
 
-const MOMENTS: Moment[] = [
-  {
-    id: 'm1',
-    name: 'Unahynn',
-    avatar: avatarUnahynn,
-    avatarStyle: { width: 75, height: 42, left: -44, top: -1, maxWidth: 'none' },
-    image: moment1,
-  },
-  {
-    id: 'm2',
-    name: 'SSU',
-    avatar: avatarSsu,
-    avatarStyle: { width: '107.03%', height: '112.5%', left: '-3.05%', top: '-9.66%', maxWidth: 'none' },
-    image: moment2,
-  },
-  { id: 'm3', name: 'Minhee', avatar: avatar3, image: moment3 },
-]
-
-/** 행운방(친구방) 화면: Lucky Talk 캐러셀 + Lucky Moments */
-export default function FriendsRoom() {
+export default function FriendsRoom({ onOpenMoment }: Props) {
   return (
     <div className="friends">
       <StatusBar />
@@ -107,15 +81,15 @@ export default function FriendsRoom() {
         </h2>
         <ul className="moments">
           {MOMENTS.map((m) => (
-            <li key={m.id} className="moment">
-              <img className="moment__photo" src={m.image} alt={`${m.name}의 행운 순간`} />
-              <div className="moment__shade" />
-              <div className="moment__user">
-                <span className="moment__avatar">
-                  <img src={m.avatar} alt="" style={m.avatarStyle} />
-                </span>
-                <span className="moment__name">{m.name}</span>
-              </div>
+            <li key={m.id}>
+              <button className="moment" onClick={() => onOpenMoment(m.id)} aria-label={`${m.name}의 스토리 보기`}>
+                <img className="moment__photo" src={m.photo} alt="" draggable={false} />
+                <div className="moment__shade" />
+                <div className="moment__user">
+                  <Avatar src={m.avatar} crop={m.avatarCrop} />
+                  <span className="moment__name">{m.name}</span>
+                </div>
+              </button>
             </li>
           ))}
         </ul>

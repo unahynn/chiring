@@ -1,0 +1,229 @@
+/* 스토리 화면: 피그마 402 × 874 프레임 좌표 그대로 배치 */
+.story {
+  position: relative;
+  height: 874px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.story__back {
+  position: absolute;
+  left: 20px;
+  top: 67px;
+  width: 28px;
+  height: 28px;
+  color: #fff;
+}
+
+/* ---------- 사진 ---------- */
+.story__photo {
+  position: absolute;
+  left: 20px;
+  top: 107.22px;
+  width: 362px;
+  height: 442px;
+  border-radius: 100px;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.story__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.story__caption {
+  position: absolute;
+  left: 50%;
+  top: 46.63px;
+  width: 217px;
+  height: 39px;
+  margin-left: -108px;
+  border-radius: 45px;
+  background: #fff;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.8px;
+  white-space: nowrap;
+}
+
+/* ---------- 기운 스티커 ---------- */
+.sticker {
+  position: absolute;
+  width: 0;
+  height: 0;
+  user-select: none;
+}
+
+.sticker__art {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.sticker__art img {
+  position: absolute;
+  max-width: none;
+  image-rendering: pixelated;
+}
+
+.sticker.is-mine .sticker__art {
+  cursor: grab;
+}
+
+.sticker.is-mine:active .sticker__art {
+  cursor: grabbing;
+}
+
+.sticker__label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, var(--label-offset, 38px));
+  height: 25px;
+  padding: 0 9px;
+  border-radius: 27px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 25px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* 방금 붙인 스티커는 톡 튀어나와요 */
+.sticker.is-new .sticker__art,
+.sticker.is-new .sticker__label {
+  animation: sticker-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes sticker-pop {
+  from {
+    opacity: 0;
+    scale: 0.3;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* ---------- 작성자 ---------- */
+.story__author {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 564.5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+}
+
+.story__avatar {
+  border: 1.29px solid #7b7b7b;
+  background: #d1d7de;
+}
+
+.story__name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.72px;
+}
+
+/* ---------- 기운 버튼 ---------- */
+.energy-btn {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(63, 63, 63, 0.3);
+  border: 1.4px solid #2d2d2d;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.energy-btn:active {
+  transform: scale(0.9);
+}
+
+.energy-btn img {
+  image-rendering: pixelated;
+}
+
+.story__hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 729px;
+  text-align: center;
+  font-size: 14px;
+  letter-spacing: -0.56px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- 메시지 ---------- */
+.story__message {
+  position: absolute;
+  left: 20px;
+  top: 780.22px;
+  width: 362px;
+  height: 60px;
+  border-radius: 40px;
+  background: #282828;
+}
+
+.story__message input {
+  width: 100%;
+  height: 100%;
+  padding: 0 70px 0 35px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 18px;
+  letter-spacing: -0.72px;
+}
+
+.story__message input::placeholder {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.story__send {
+  position: absolute;
+  right: 9px;
+  top: 7.7px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #ff39c7;
+  display: grid;
+  place-items: center;
+}
+
+.story__toast {
+  position: absolute;
+  left: 50%;
+  bottom: 110px;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: rgba(40, 40, 40, 0.95);
+  font-size: 14px;
+  white-space: nowrap;
+  animation: sticker-pop 0.3s ease-out;
+}

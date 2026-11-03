@@ -263,13 +263,25 @@
   display: none;
 }
 
+.moments > li {
+  flex: 0 0 159px;
+  scroll-snap-align: start;
+}
+
 .moment {
   position: relative;
-  flex: 0 0 159px;
+  display: block;
+  width: 159px;
   height: 260px;
   border-radius: 32px;
   overflow: hidden;
-  scroll-snap-align: start;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s;
+}
+
+.moment:active {
+  transform: scale(0.97);
 }
 
 /* 테두리를 사진 위에 얹어서 피그마처럼 반투명 흰 테두리가 보이게 */
@@ -301,25 +313,6 @@
   display: flex;
   align-items: center;
   gap: 9px;
-}
-
-.moment__avatar {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  border: 1px solid #fff;
-  border-radius: 100px;
-  overflow: hidden;
-  background: #666;
-  flex: none;
-}
-
-.moment__avatar img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .moment__name {
