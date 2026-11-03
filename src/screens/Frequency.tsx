@@ -498,7 +498,7 @@ export default function Frequency({ step, onStepChange }: Props) {
             onStepChange('home')
           }}
         >
-          내 키링에 달기
+          완료
         </button>
         <div className="freq__indicator gifted__indicator" />
       </div>
