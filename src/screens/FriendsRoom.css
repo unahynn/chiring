@@ -62,23 +62,6 @@
   touch-action: pan-y;
 }
 
-.carousel__ghost {
-  position: absolute;
-  top: 57px;
-  left: 50%;
-  width: 126px;
-  height: 205px;
-  border-radius: 60px;
-}
-
-.carousel__ghost--left {
-  transform: translateX(calc(-50% - 118px));
-}
-
-.carousel__ghost--right {
-  transform: translateX(calc(-50% + 118px));
-}
-
 .room-card {
   position: absolute;
   top: 0;
@@ -91,19 +74,22 @@
   text-align: center;
   transition:
     transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s,
+    border-radius 0.45s,
     box-shadow 0.45s;
   -webkit-tap-highlight-color: transparent;
 }
 
 .room-card--center {
-  z-index: 3;
+  z-index: 5;
   transform: translateX(0) scale(1);
   box-shadow: 3.5px 3.5px 48px rgba(55, 55, 55, 0.25);
 }
 
 .room-card--left,
 .room-card--right {
-  z-index: 2;
+  z-index: 4;
+  border-radius: 73px; /* 0.825배로 줄었을 때 60px */
   box-shadow: 3.5px 3.5px 48px rgba(187, 187, 187, 0.25);
 }
 
@@ -114,6 +100,31 @@
 
 .room-card--right {
   transform: translateX(73.3px) scale(0.825);
+}
+
+/* 맨 바깥 카드: 피그마 126 × 205 → 0.64배, 사진 89% 불투명 + 40% 어둡게 */
+.room-card--far-left,
+.room-card--far-right {
+  z-index: 3;
+  opacity: 0.89;
+  border-radius: 94px; /* 0.64배로 줄었을 때 피그마처럼 60px로 보이게 */
+  box-shadow: none;
+}
+
+.room-card--far-left {
+  transform: translateX(-118px) scale(0.64);
+}
+
+.room-card--far-right {
+  transform: translateX(118px) scale(0.64);
+}
+
+/* 6번째 방부터는 가운데 뒤에 숨어 있다가 차례가 오면 나와요 */
+.room-card--hidden {
+  z-index: 1;
+  opacity: 0;
+  transform: scale(0.5);
+  pointer-events: none;
 }
 
 .room-card__img {
@@ -145,6 +156,11 @@
 
 .room-card--center .room-card__dim {
   opacity: 0;
+}
+
+.room-card--far-left .room-card__dim,
+.room-card--far-right .room-card__dim {
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .room-card__badge {
@@ -201,35 +217,21 @@
   color: var(--text-80);
 }
 
-.room-card--left .room-card__badge,
-.room-card--right .room-card__badge,
-.room-card--left .room-card__members,
-.room-card--right .room-card__members {
+.room-card:not(.room-card--center) .room-card__badge,
+.room-card:not(.room-card--center) .room-card__members,
+.room-card--far-left .room-card__title,
+.room-card--far-right .room-card__title,
+.room-card--hidden .room-card__title {
   opacity: 0;
 }
 
-.carousel__dots {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 19px;
-}
-
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #4a4a4a;
-  transition: background 0.3s;
-}
-
-.dot.is-active {
-  background: var(--dot-active);
+.room-card__title {
+  transition: opacity 0.3s;
 }
 
 /* ---------- Lucky Moments ---------- */
 .lucky-moments {
-  margin-top: 33px;
+  margin-top: 61px;
 }
 
 .moments {

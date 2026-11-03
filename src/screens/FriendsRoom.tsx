@@ -6,8 +6,8 @@ import luckyMomentsTitle from '../assets/svg/lucky-moments.svg'
 import roomLeft from '../assets/friends/room-left.png'
 import roomCenter from '../assets/friends/room-center.png'
 import roomRight from '../assets/friends/room-right.png'
-import ghostLeft from '../assets/friends/ghost-left.png'
-import ghostRight from '../assets/friends/ghost-right.png'
+import room4 from '../assets/friends/room-4.png'
+import room5 from '../assets/friends/room-5.png'
 import moment1 from '../assets/friends/moment-1.jpg'
 import moment2 from '../assets/friends/moment-2.jpg'
 import moment3 from '../assets/friends/moment-3.jpg'
@@ -29,11 +29,29 @@ type Room = {
 }
 
 // 나중에 서버/DB에서 받아올 데이터. 지금은 더미 데이터예요.
+// 방이 몇 개든 가운데 기준으로 양옆 2개씩(총 5장)만 보이고, 나머지는 뒤에 숨어 있다가 돌아와요.
+// r4, r5의 방 이름·인원은 디자인에 없어서 임시로 넣은 값이에요.
 const ROOMS: Room[] = [
   { id: 'r1', title: '액운 반사단', members: '민지님 외 3명', unread: 3, image: roomLeft },
   { id: 'r2', title: '행운 공구방', clover: true, members: '수민님 외 2명', unread: 8, image: roomCenter, gradientBaked: true },
   { id: 'r3', title: 'LuckyClub', members: '권님 외 4명', unread: 2, image: roomRight },
+  { id: 'r4', title: '마음 수련방', members: '지수님 외 5명', unread: 1, image: room5 },
+  { id: 'r5', title: '귀여운 탓', members: '하늘님 외 1명', unread: 4, image: room4 },
 ]
+
+/** 가운데(active) 기준으로 몇 칸 떨어져 있는지: -2, -1, 0, 1, 2 … (빙글빙글 순환) */
+function getOffset(i: number, active: number, n: number) {
+  let d = (((i - active) % n) + n) % n
+  if (d > n / 2) d -= n
+  return d
+}
+
+function positionClass(offset: number) {
+  if (offset === 0) return 'center'
+  if (Math.abs(offset) === 1) return offset < 0 ? 'left' : 'right'
+  if (Math.abs(offset) === 2) return offset < 0 ? 'far-left' : 'far-right'
+  return 'hidden'
+}
 
 type Moment = {
   id: string
@@ -111,7 +129,7 @@ function RoomCarousel({ rooms }: { rooms: Room[] }) {
   const startX = useRef<number | null>(null)
   const n = rooms.length
 
-  const go = (dir: 1 | -1) => setActive((a) => (a + dir + n) % n)
+  const go = (step: number) => setActive((a) => (((a + step) % n) + n) % n)
 
   return (
     <div className="carousel">
@@ -126,19 +144,16 @@ function RoomCarousel({ rooms }: { rooms: Room[] }) {
           else if (dx < -40) go(1)
         }}
       >
-        {/* 맨 뒤에 깔린 작은 카드 */}
-        <img className="carousel__ghost carousel__ghost--left" src={ghostLeft} alt="" draggable={false} />
-        <img className="carousel__ghost carousel__ghost--right" src={ghostRight} alt="" draggable={false} />
-
         {rooms.map((room, i) => {
-          // -1: 왼쪽, 0: 가운데, 1: 오른쪽
-          const offset = ((i - active + n + 1) % n) - 1
-          const pos = offset === 0 ? 'center' : offset < 0 ? 'left' : 'right'
+          const offset = getOffset(i, active, n)
+          const pos = positionClass(offset)
           return (
             <button
               key={room.id}
               className={`room-card room-card--${pos}`}
-              onClick={() => offset !== 0 && go(offset as 1 | -1)}
+              onClick={() => offset !== 0 && go(offset)}
+              tabIndex={pos === 'hidden' ? -1 : 0}
+              aria-hidden={pos === 'hidden' ? true : undefined}
               aria-label={offset === 0 ? `${room.title} 입장하기` : `${room.title} 보기`}
             >
               <img className="room-card__img" src={room.image} alt="" draggable={false} />
@@ -155,17 +170,6 @@ function RoomCarousel({ rooms }: { rooms: Room[] }) {
             </button>
           )
         })}
-      </div>
-
-      <div className="carousel__dots">
-        {rooms.map((room, i) => (
-          <button
-            key={room.id}
-            className={`dot${i === active ? ' is-active' : ''}`}
-            onClick={() => setActive(i)}
-            aria-label={`${i + 1}번째 방`}
-          />
-        ))}
       </div>
     </div>
   )
