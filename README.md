@@ -10,6 +10,8 @@ npm run dev
 ```
 
 브라우저에서 터미널에 나오는 주소(보통 http://localhost:5173)를 열면 돼요.
+
+**폰으로 보기:** https://unahynn.github.io/chiring/ (main에 올라갈 때마다 자동 배포)
 PC에서는 폰 크기 프레임으로 보이고, 휴대폰에서는 화면에 꽉 차게 보여요.
 
 ## 화면 진행 상황
