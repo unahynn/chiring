@@ -12,7 +12,7 @@ import avatarSsu from '../assets/frequency/avatar-ssu.jpg'
 import avatarNahyun from '../assets/frequency/avatar-nahyun.jpg'
 import avatarYujin from '../assets/frequency/avatar-yujin.jpg'
 import avatarSumin from '../assets/friends/avatar-sumin.jpg'
-import { energyCard, pickEnergy, suggestKeywords, type EnergyType } from '../data/energy'
+import { ENERGY_META, energyCard, pickEnergy, suggestKeywords, type EnergyType } from '../data/energy'
 import './Frequency.css'
 
 export type FrequencyStep = 'home' | 'friend' | 'compose' | 'result' | 'loading' | 'cards' | 'message'
@@ -25,31 +25,29 @@ type Friend = {
   name: string
   /** 제목에 들어갈 부르는 이름: "수민이한테 어떤 기운을…" */
   callName: string
-  need: string
-  dot: string
+  /** 오늘 필요한 기운 → 점 색과 글자는 ENERGY_META에서 */
+  need: EnergyType
   avatarBg: string
   layers: Layer[]
 }
 
 // 나중에 서버에서 받아올 친구 목록. 피그마 '주파수 친구 선택' 화면 그대로예요.
 const FRIENDS: Friend[] = [
-  { id: 'dayun', name: 'dayun', callName: '다윤이', need: '나무 (木)', dot: '#5effc7', avatarBg: '#d1d7de', layers: [{ src: avatarDayun }] },
+  { id: 'dayun', name: 'dayun', callName: '다윤이', need: 'wood', avatarBg: '#d1d7de', layers: [{ src: avatarDayun }] },
   {
     id: 'sumin',
     name: 'sumin',
     callName: '수민이',
-    need: '물 (水)',
-    dot: '#13e2ff',
+    need: 'water',
     avatarBg: '#d1d7de',
     layers: [{ src: avatarSumin, style: { left: -26, top: -17, width: 92, height: 92 } }],
   },
-  { id: 'ssu', name: 'SSU', callName: '수진이', need: '물 (水)', dot: '#13e2ff', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
+  { id: 'ssu', name: 'SSU', callName: '수진이', need: 'water', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
   {
     id: 'nahyun',
     name: 'Nahyun',
     callName: '나현이',
-    need: '금 (金)',
-    dot: '#cefb6a',
+    need: 'metal',
     avatarBg: '#d1d7de',
     layers: [{ src: avatarSsu }, { src: avatarNahyun, style: { left: -1, top: -16, width: 44, height: 59 } }],
   },
@@ -57,12 +55,11 @@ const FRIENDS: Friend[] = [
     id: 'yujin',
     name: 'yujin',
     callName: '유진이',
-    need: '금 (金)',
-    dot: '#cefb6a',
+    need: 'metal',
     avatarBg: '#d1d7de',
     layers: [{ src: avatarYujin, style: { left: 0, top: '-12.41%', width: '100%', height: '177.78%', objectFit: 'fill' } }],
   },
-  { id: 'kwon', name: 'Kwon', callName: '권이', need: '화 (火)', dot: '#ffa1f7', avatarBg: '#8ec2ff', layers: [] },
+  { id: 'kwon', name: 'Kwon', callName: '권이', need: 'fire', avatarBg: '#8ec2ff', layers: [] },
 ]
 
 /** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') */
@@ -74,11 +71,11 @@ const SIGNAL_CARDS = [
 
 /** 기운 생성중 화면의 움직이는 그라데이션 색 (기운마다 다르게) */
 const LOADING_COLORS: Record<EnergyType, [string, string, string]> = {
-  water: ['#6a2bd9', '#ff39c7', '#39caff'],
-  fire: ['#c4166f', '#ff39c7', '#ffb36b'],
-  wood: ['#1f7a63', '#3ee8a8', '#aaf4ff'],
-  metal: ['#5a6b12', '#cefb6a', '#fff6a8'],
-  earth: ['#7a3a12', '#ff8a3d', '#ffd6a8'],
+  water: ['#6a2bd9', '#ff39c7', '#13e2ff'],
+  fire: ['#b0127a', '#ff39c7', '#ffa1f7'],
+  wood: ['#0f6b52', '#5effc7', '#aaf4ff'],
+  metal: ['#4f6410', '#cefb6a', '#f4ffc2'],
+  earth: ['#7a3412', '#ff8a3d', '#ffc89a'],
 }
 
 type Props = {
@@ -122,7 +119,7 @@ export default function Frequency({ step, onStepChange }: Props) {
   const [sent, setSent] = useState(false)
   const swipeX = useRef<number | null>(null)
   const swiped = useRef(false)
-  const energy = pickEnergy(text, picks)
+  const energy = pickEnergy(text, picks, friend?.need)
 
   // 기운 생성중 → 잠시 뒤 카드 선택 화면으로
   useEffect(() => {
@@ -168,8 +165,8 @@ export default function Frequency({ step, onStepChange }: Props) {
                   ))}
                 </span>
                 <span className="friend-row__name">{f.name}</span>
-                <span className="friend-row__need">오늘 필요한 기운: {f.need}</span>
-                <span className="friend-row__dot" style={{ background: f.dot }} />
+                <span className="friend-row__need">오늘 필요한 기운: {ENERGY_META[f.need].label}</span>
+                <span className="friend-row__dot" style={{ background: ENERGY_META[f.need].dot }} />
               </button>
             </li>
           ))}
@@ -214,6 +211,7 @@ export default function Frequency({ step, onStepChange }: Props) {
           {editing ? (
             <textarea
               ref={textRef}
+              autoFocus
               id="frequency-text"
               className="compose__input"
               value={text}
@@ -284,7 +282,7 @@ export default function Frequency({ step, onStepChange }: Props) {
   }
 
   if (step === 'result' && friend) {
-    const card = energyCard(pickEnergy(text, picks), friend.callName, text)
+    const card = energyCard(energy, friend.callName, text)
     const bg = `url("data:image/svg+xml;utf8,${encodeURIComponent(
       `<svg viewBox='0 0 306 401' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect width='100%' height='100%' fill='url(#g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(25.2 31.254 -23.85 18.576 54 105.16)'>${card.stops
         .map((c, i) => `<stop stop-color='${c}' offset='${i / 4}'/>`)

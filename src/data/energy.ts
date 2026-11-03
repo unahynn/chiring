@@ -3,6 +3,19 @@
 
 export type EnergyType = 'water' | 'fire' | 'wood' | 'metal' | 'earth'
 
+/**
+ * 기운 = 색 (디자인 규칙)
+ * 블루 = 물, 그린 = 나무, 네온 = 금, 핑크 = 불, 오렌지 = 흙
+ * 친구 목록 점, 필요한 기운 카드, 기운 생성중 그라데이션이 모두 이 색을 따라가요.
+ */
+export const ENERGY_META: Record<EnergyType, { label: string; dot: string }> = {
+  water: { label: '물 (水)', dot: '#13e2ff' },
+  wood: { label: '나무 (木)', dot: '#5effc7' },
+  metal: { label: '금 (金)', dot: '#cefb6a' },
+  fire: { label: '화 (火)', dot: '#ffa1f7' },
+  earth: { label: '흙 (土)', dot: '#ff8a3d' },
+}
+
 /** 내용에 들어간 단어 → 추천 키워드 (위에서부터 먼저 맞는 순서대로) */
 const KEYWORD_RULES: { match: RegExp; keywords: string[] }[] = [
   { match: /전남친|전여친|재회|연락|헤어|이별|썸|짝사랑|연애/, keywords: ['마음 진정', '새 인연 찾기', '기분 전환', '멘탈 회복', '꿀잠 자기'] },
@@ -34,9 +47,15 @@ const ENERGY_HINTS: Record<EnergyType, RegExp> = {
   earth: /꿀잠|휴식|건강|안정|피곤|쉬|아프/,
 }
 
-export function pickEnergy(text: string, keywords: string[]): EnergyType {
+/**
+ * need: 친구 목록에 색으로 표시된 '오늘 필요한 기운'.
+ * 친구를 골랐다면 결과도 그 기운으로 맞춰요 (목록의 색 = 결과 카드의 색).
+ * 내용·키워드는 카드 문구를 정하는 데 써요. need가 없을 때만 내용으로 기운을 골라요.
+ */
+export function pickEnergy(text: string, keywords: string[], need?: EnergyType): EnergyType {
+  if (need) return need
   const all = `${text} ${keywords.join(' ')}`
-  let best: EnergyType = 'water'
+  let best: EnergyType = need ?? 'water'
   let bestScore = -1
   for (const type of Object.keys(ENERGY_HINTS) as EnergyType[]) {
     const re = new RegExp(ENERGY_HINTS[type].source, 'g')
@@ -91,8 +110,8 @@ export function energyCard(type: EnergyType, name: string, text: string): Energy
         title: '불(火)의 기운',
         desc: `${name}는 지금 에너지가 조금 식어 있어.\n자신 있게 한 발 내딛을 수 있도록\n뜨거운 불 기운으로 용기를 채우는게 필요해`,
         tags: ['# 불의 기운', '# 자신감 충전', '# 열정 가득'],
-        color: '#ff5ccf',
-        stops: ['#ffffff', '#ffd6f3', '#ffadea', '#ff85dc', '#ff5ccf'],
+        color: '#ff39c7',
+        stops: ['#ffffff', '#ffe0f8', '#ffc0f3', '#ffa1f7', '#ff39c7'],
       }
     case 'wood':
       return {
@@ -101,8 +120,8 @@ export function energyCard(type: EnergyType, name: string, text: string): Energy
         title: '나무(木)의 기운',
         desc: `${name}는 지금 새 출발이 필요한 때!\n지난 일은 흘려보내고\n쑥쑥 자라는 나무 기운으로 기분을 바꾸는게 필요해`,
         tags: ['# 나무의 기운', '# 새로운 시작', '# 기분 전환'],
-        color: '#3ee8a8',
-        stops: ['#ffffff', '#d4fbec', '#a8f6d9', '#73efc1', '#3ee8a8'],
+        color: '#5effc7',
+        stops: ['#ffffff', '#d7fff1', '#aeffe3', '#86ffd5', '#5effc7'],
       }
     case 'metal':
       return {
@@ -111,8 +130,8 @@ export function energyCard(type: EnergyType, name: string, text: string): Energy
         title: '금(金)의 기운',
         desc: `${name}는 지금 결과가 걸린 중요한 순간!\n흔들리지 않고 끝까지 해낼 수 있도록\n반짝이는 금 기운으로 운을 모으는게 필요해`,
         tags: ['# 금의 기운', '# 합격 기운', '# 집중력'],
-        color: '#b6ea3c',
-        stops: ['#ffffff', '#f0fbcf', '#e0f6a0', '#cbf06e', '#b6ea3c'],
+        color: '#cefb6a',
+        stops: ['#ffffff', '#f3fed9', '#e6fdb4', '#dafc8f', '#cefb6a'],
       }
     case 'earth':
       return {
