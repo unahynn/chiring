@@ -4,6 +4,31 @@
   height: 874px;
   background: var(--bg);
   overflow: hidden;
+  touch-action: pan-y; /* 세로 스크롤은 브라우저에, 가로 넘기기는 앱이 처리 */
+  transition: transform 0.25s ease-out;
+}
+
+/* 옆 친구 스토리로 넘어갈 때 미끄러져 들어오기 */
+.story.enter-from-right {
+  animation: story-in-right 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.story.enter-from-left {
+  animation: story-in-left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes story-in-right {
+  from {
+    translate: 60% 0;
+    opacity: 0.3;
+  }
+}
+
+@keyframes story-in-left {
+  from {
+    translate: -60% 0;
+    opacity: 0.3;
+  }
 }
 
 .story__back {

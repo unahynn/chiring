@@ -42,10 +42,18 @@ const savedStickers = new Map<string, PlacedSticker[]>()
 type Props = {
   moment: Moment
   onBack: () => void
+  /** 옆으로 넘기면 다음/이전 친구 스토리로 (없으면 undefined) */
+  onNext?: () => void
+  onPrev?: () => void
+  /** 들어올 때 어느 쪽에서 미끄러져 들어올지 */
+  enterFrom?: 'left' | 'right'
 }
 
 /** 친구 스토리 화면: 사진 + 기운 스티커 붙이기 + 메시지 남기기 */
-export default function Story({ moment, onBack }: Props) {
+export default function Story({ moment, onBack, onNext, onPrev, enterFrom }: Props) {
+  /** 화면을 옆으로 넘기는 제스처 (스티커·버튼·입력창을 만질 때는 제외) */
+  const swipe = useRef<{ x: number; y: number } | null>(null)
+  const [nudge, setNudge] = useState(0)
   const [stickers, setStickers] = useState<PlacedSticker[]>(() => savedStickers.get(moment.id) ?? moment.stickers)
   useEffect(() => {
     savedStickers.set(moment.id, stickers)
@@ -102,7 +110,36 @@ export default function Story({ moment, onBack }: Props) {
   }
 
   return (
-    <div className={`story${typing ? ' is-typing' : ''}`} ref={storyRef}>
+    <div
+      className={`story${typing ? ' is-typing' : ''}${enterFrom ? ` enter-from-${enterFrom}` : ''}`}
+      ref={storyRef}
+      style={nudge ? { transform: `translateX(${nudge}px)`, transition: 'none' } : undefined}
+      onPointerDown={(e) => {
+        const t = e.target as HTMLElement
+        if (typing || t.closest('.sticker.is-mine, .energy-btn, .story__message, .story__back')) return
+        swipe.current = { x: e.clientX, y: e.clientY }
+      }}
+      onPointerMove={(e) => {
+        if (!swipe.current) return
+        const dx = e.clientX - swipe.current.x
+        const dy = e.clientY - swipe.current.y
+        if (Math.abs(dx) > Math.abs(dy)) setNudge(dx * 0.35) // 손가락 따라 살짝 끌려가는 느낌
+      }}
+      onPointerUp={(e) => {
+        if (!swipe.current) return
+        const dx = e.clientX - swipe.current.x
+        const dy = e.clientY - swipe.current.y
+        swipe.current = null
+        setNudge(0)
+        if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return
+        if (dx < 0) onNext?.()
+        else onPrev?.()
+      }}
+      onPointerCancel={() => {
+        swipe.current = null
+        setNudge(0)
+      }}
+    >
       <StatusBar />
       <button className="story__back" aria-label="뒤로가기" onClick={onBack}>
         <CaretLeftIcon />

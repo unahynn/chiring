@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import StatusBar from '../components/StatusBar'
-import { CaretLeftIcon, CloverIcon } from '../components/icons'
+import { CloverIcon } from '../components/icons'
 import luckyTalkTitle from '../assets/svg/lucky-talk.svg'
 import luckyMomentsTitle from '../assets/svg/lucky-moments.svg'
 import roomLeft from '../assets/friends/room-left.jpg'
@@ -61,9 +61,6 @@ export default function FriendsRoom({ onOpenMoment }: Props) {
       <StatusBar />
 
       <header className="gnb">
-        <button className="gnb__back" aria-label="뒤로가기">
-          <CaretLeftIcon />
-        </button>
         <h1 className="gnb__title">행운방</h1>
       </header>
 
