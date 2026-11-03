@@ -51,6 +51,8 @@ export default function Story({ moment, onBack }: Props) {
     savedStickers.set(moment.id, stickers)
   }, [moment.id, stickers])
   const [justAdded, setJustAdded] = useState<string | null>(null)
+  /** 스토리를 열 때 이미 붙어 있던 스티커들은 하나씩 '쿵' 하고 찍히듯 나타나요 */
+  const [introOrder] = useState(() => new Map(stickers.map((st, i) => [st.id, i])))
   const [message, setMessage] = useState('')
   const [toast, setToast] = useState<string | null>(null)
   /** 메시지 입력 중이면 스토리가 작아지면서 위로 올라가요 */
@@ -127,8 +129,13 @@ export default function Story({ moment, onBack }: Props) {
         {stickers.map((s) => (
           <div
             key={s.id}
-            className={`sticker${s.id === justAdded ? ' is-new' : ''}${s.from === ME ? ' is-mine' : ''}`}
-            style={{ left: s.x, top: s.y, ['--label-offset' as string]: `${artHeight(s.type) / 2 + 8}px` }}
+            className={`sticker${s.id === justAdded || introOrder.has(s.id) ? ' is-stamp' : ''}${s.from === ME ? ' is-mine' : ''}`}
+            style={{
+              left: s.x,
+              top: s.y,
+              ['--label-offset' as string]: `${artHeight(s.type) / 2 + 8}px`,
+              ['--delay' as string]: `${introOrder.has(s.id) ? 250 + introOrder.get(s.id)! * 380 : 0}ms`,
+            }}
             onPointerDown={(e) => {
               if (s.from !== ME) return // 내가 붙인 스티커만 옮길 수 있어요
               e.preventDefault()

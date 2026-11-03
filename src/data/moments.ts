@@ -45,7 +45,11 @@ export const MOMENTS: Moment[] = [
     avatar: avatarUnahynn,
     avatarCrop: { left: -43, top: 0, width: 75, height: 42 },
     photo: momentUnahynn,
-    stickers: [],
+    stickers: [
+      { id: 'u1', type: 'water', from: 'Sumin', x: 95, y: 300 },
+      { id: 'u2', type: 'sprout', from: 'Minhee', x: 270, y: 170 },
+      { id: 'u3', type: 'diamond', from: 'SSU', x: 255, y: 345 },
+    ],
   },
   {
     id: 'sumin',
@@ -66,7 +70,11 @@ export const MOMENTS: Moment[] = [
     avatar: avatarMinhee,
     photo: momentMinhee,
     caption: '하ㅏ 월요일 1교시 에바야 ㅠ',
-    stickers: [],
+    stickers: [
+      { id: 'h1', type: 'fire', from: 'Sumin', x: 280, y: 190 },
+      { id: 'h2', type: 'leaf-pair', from: 'Kwon', x: 90, y: 300 },
+      { id: 'h3', type: 'water', from: 'SSU', x: 250, y: 355 },
+    ],
   },
   {
     id: 'ssu',
@@ -74,7 +82,11 @@ export const MOMENTS: Moment[] = [
     avatar: avatarSsu,
     avatarCrop: { left: -1, top: -3.1, width: 34.3, height: 36 },
     photo: momentSsu,
-    stickers: [],
+    stickers: [
+      { id: 'q1', type: 'leaf', from: 'Minhee', x: 95, y: 175 },
+      { id: 'q2', type: 'fire', from: 'MINJU', x: 270, y: 290 },
+      { id: 'q3', type: 'gem-pair', from: 'Kwon', x: 120, y: 360 },
+    ],
   },
   {
     id: 'kwon',
@@ -82,6 +94,10 @@ export const MOMENTS: Moment[] = [
     avatar: avatarKwon,
     avatarCrop: { left: -7.6, top: 0, width: 47, height: 32.2 },
     photo: momentKwon,
-    stickers: [],
+    stickers: [
+      { id: 'k1', type: 'gem-pair', from: 'Sumin', x: 115, y: 190 },
+      { id: 'k2', type: 'sprout', from: 'SSU', x: 265, y: 300 },
+      { id: 'k3', type: 'water', from: 'Minhee', x: 95, y: 360 },
+    ],
   },
 ]
