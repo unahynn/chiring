@@ -68,62 +68,69 @@
   left: 50%;
   width: 197px;
   height: 318px;
-  margin-left: -98.5px;
-  border-radius: 60px;
+  border-radius: 60px; /* 모든 카드 라운드 60 통일 */
   overflow: hidden;
   text-align: center;
+  transform: translateX(-50%);
   transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.45s,
-    border-radius 0.45s,
     box-shadow 0.45s;
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 가운데 카드: 197 × 318 */
 .room-card--center {
   z-index: 5;
-  transform: translateX(0) scale(1);
   box-shadow: 3.5px 3.5px 48px rgba(55, 55, 55, 0.25);
 }
 
+/* 옆 카드: 162.6 × 262.5 */
 .room-card--left,
 .room-card--right {
   z-index: 4;
-  border-radius: 73px; /* 0.825배로 줄었을 때 60px */
+  top: 28px;
+  width: 162.6px;
+  height: 262.5px;
   box-shadow: 3.5px 3.5px 48px rgba(187, 187, 187, 0.25);
 }
 
-/* 피그마: 옆 카드는 162.6 × 262.5 → 가운데 카드의 0.825배 */
 .room-card--left {
-  transform: translateX(-72.5px) scale(0.825);
+  left: calc(50% - 72.5px);
 }
 
 .room-card--right {
-  transform: translateX(73.3px) scale(0.825);
+  left: calc(50% + 73.3px);
 }
 
-/* 맨 바깥 카드: 피그마 126 × 205 → 0.64배, 사진 89% 불투명 + 40% 어둡게 */
+/* 맨 바깥 카드: 126 × 205, 사진 89% 불투명 + 40% 어둡게 */
 .room-card--far-left,
 .room-card--far-right {
   z-index: 3;
+  top: 57px;
+  width: 126px;
+  height: 205px;
   opacity: 0.89;
-  border-radius: 94px; /* 0.64배로 줄었을 때 피그마처럼 60px로 보이게 */
-  box-shadow: none;
 }
 
 .room-card--far-left {
-  transform: translateX(-118px) scale(0.64);
+  left: calc(50% - 118px);
 }
 
 .room-card--far-right {
-  transform: translateX(118px) scale(0.64);
+  left: calc(50% + 118px);
 }
 
 /* 6번째 방부터는 가운데 뒤에 숨어 있다가 차례가 오면 나와요 */
 .room-card--hidden {
   z-index: 1;
+  top: 57px;
+  width: 126px;
+  height: 205px;
   opacity: 0;
-  transform: scale(0.5);
   pointer-events: none;
 }
 
@@ -166,7 +173,7 @@
 .room-card__badge {
   position: absolute;
   top: 17.5px;
-  left: 150.5px;
+  right: 25.5px;
   width: 21px;
   height: 21px;
   border-radius: 100px;
@@ -185,6 +192,7 @@
   left: 0;
   right: 0;
   top: 218px;
+  transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -227,6 +235,11 @@
 
 .room-card__title {
   transition: opacity 0.3s;
+}
+
+/* 옆 카드는 방 이름만 카드 위에서 205px 지점에 */
+.room-card:not(.room-card--center) .room-card__info {
+  top: 176px;
 }
 
 /* ---------- Lucky Moments ---------- */

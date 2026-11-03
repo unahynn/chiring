@@ -3,11 +3,11 @@ import StatusBar from '../components/StatusBar'
 import { CaretLeftIcon, CloverIcon } from '../components/icons'
 import luckyTalkTitle from '../assets/svg/lucky-talk.svg'
 import luckyMomentsTitle from '../assets/svg/lucky-moments.svg'
-import roomLeft from '../assets/friends/room-left.png'
-import roomCenter from '../assets/friends/room-center.png'
-import roomRight from '../assets/friends/room-right.png'
-import room4 from '../assets/friends/room-4.png'
-import room5 from '../assets/friends/room-5.png'
+import roomLeft from '../assets/friends/room-left.jpg'
+import roomCenter from '../assets/friends/room-center.jpg'
+import roomRight from '../assets/friends/room-right.jpg'
+import room4 from '../assets/friends/room-4.jpg'
+import room5 from '../assets/friends/room-5.jpg'
 import moment1 from '../assets/friends/moment-1.jpg'
 import moment2 from '../assets/friends/moment-2.jpg'
 import moment3 from '../assets/friends/moment-3.jpg'
@@ -30,13 +30,13 @@ type Room = {
 
 // 나중에 서버/DB에서 받아올 데이터. 지금은 더미 데이터예요.
 // 방이 몇 개든 가운데 기준으로 양옆 2개씩(총 5장)만 보이고, 나머지는 뒤에 숨어 있다가 돌아와요.
-// r4, r5의 방 이름·인원은 디자인에 없어서 임시로 넣은 값이에요.
+// r4의 방 이름, r4·r5의 인원은 디자인에 없어서 임시로 넣은 값이에요.
 const ROOMS: Room[] = [
   { id: 'r1', title: '액운 반사단', members: '민지님 외 3명', unread: 3, image: roomLeft },
   { id: 'r2', title: '행운 공구방', clover: true, members: '수민님 외 2명', unread: 8, image: roomCenter, gradientBaked: true },
   { id: 'r3', title: 'LuckyClub', members: '권님 외 4명', unread: 2, image: roomRight },
   { id: 'r4', title: '마음 수련방', members: '지수님 외 5명', unread: 1, image: room5 },
-  { id: 'r5', title: '귀여운 탓', members: '하늘님 외 1명', unread: 4, image: room4 },
+  { id: 'r5', title: '공주모임', members: '하늘님 외 1명', unread: 4, image: room4 },
 ]
 
 /** 가운데(active) 기준으로 몇 칸 떨어져 있는지: -2, -1, 0, 1, 2 … (빙글빙글 순환) */
