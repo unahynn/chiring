@@ -234,7 +234,7 @@ export default function SajuSetup({ initial, onSubmit }: Props) {
           <div className="time-sheet__band" aria-hidden />
           <WheelPicker label="오전 오후" options={AMPM} value={draft.ampm} onChange={(ampm) => setDraft((d) => ({ ...d, ampm }))} />
           <WheelPicker label="시" options={HOURS} value={draft.hour} onChange={(hour) => setDraft((d) => ({ ...d, hour }))} />
-          <WheelPicker label="분" options={MINUTES} value={draft.minute} onChange={(minute) => setDraft((d) => ({ ...d, minute }))} />
+          <WheelPicker label="분" loop options={MINUTES} value={draft.minute} onChange={(minute) => setDraft((d) => ({ ...d, minute }))} />
         </div>
         <div className="time-sheet__footer">
           <button

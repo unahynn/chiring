@@ -11,22 +11,28 @@ type Props<T> = {
   value: T
   onChange: (value: T) => void
   label: string
+  /** 끝에서 처음으로 이어져요 (59분 → 00분, 00분 → 59분) */
+  loop?: boolean
 }
 
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
+const mod = (a: number, n: number) => ((a % n) + n) % n
+/** 가운데 칸 위아래로 이만큼만 그려요 */
+const WINDOW = 3
 
 /**
  * iOS 스타일 휠 한 줄.
  * 브라우저 스크롤 대신 손가락 움직임을 직접 따라가고, 놓으면 관성으로 미끄러지다
  * 항상 가운데 칸에 딱 맞춰 멈춰요 (칸마다 어긋나지 않게).
  */
-export default function WheelPicker<T>({ options, value, onChange, label }: Props<T>) {
+export default function WheelPicker<T>({ options, value, onChange, label, loop = false }: Props<T>) {
   const initial = Math.max(0, options.findIndex((o) => o.value === value))
   const [index, setIndex] = useState(initial)
   const viewRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement | null>(null)
 
   // 화면을 그릴 때마다 바뀌는 값들 (React 다시 그리기 없이 직접 움직여요)
+  // offset·nearest는 '몇 번째 칸인지'를 끝없이 세요. loop일 때는 -1칸 = 마지막 값이에요.
   const s = useRef({
     offset: -initial * ROW,
     nearest: initial,
@@ -35,13 +41,14 @@ export default function WheelPicker<T>({ options, value, onChange, label }: Prop
     wheelTimer: 0,
     drag: null as null | { startY: number; startOffset: number; moved: boolean; samples: { t: number; y: number }[] },
   })
-  const latest = useRef({ options, onChange })
+  const latest = useRef({ options, onChange, loop })
   useEffect(() => {
-    latest.current = { options, onChange }
+    latest.current = { options, onChange, loop }
   })
 
-  const maxIndex = options.length - 1
-  const clampIndex = (i: number) => Math.min(maxIndex, Math.max(0, i))
+  const count = options.length
+  const maxIndex = count - 1
+  const clampIndex = (i: number) => (loop ? i : Math.min(maxIndex, Math.max(0, i)))
 
   const paint = (offset: number) => {
     const st = s.current
@@ -54,8 +61,11 @@ export default function WheelPicker<T>({ options, value, onChange, label }: Prop
     }
   }
 
-  const settle = (i: number) => {
+  const settle = (k: number) => {
     const st = s.current
+    const i = mod(k, latest.current.options.length)
+    // 한 바퀴 넘게 돌았으면 같은 칸 자리로 숫자만 되돌려요 (화면은 그대로)
+    if (k !== i) paint(-i * ROW)
     if (i !== st.committed) {
       st.committed = i
       latest.current.onChange(latest.current.options[i].value)
@@ -97,7 +107,8 @@ export default function WheelPicker<T>({ options, value, onChange, label }: Prop
       cancelAnimationFrame(st.raf)
       const dy = e.deltaMode === 1 ? e.deltaY * ROW : e.deltaY
       const min = -(latest.current.options.length - 1) * ROW
-      paint(Math.min(0, Math.max(min, st.offset - dy)))
+      const next = st.offset - dy
+      paint(latest.current.loop ? next : Math.min(0, Math.max(min, next)))
       clearTimeout(st.wheelTimer)
       st.wheelTimer = window.setTimeout(() => animateTo(st.nearest, 220), 90)
     }
@@ -127,8 +138,8 @@ export default function WheelPicker<T>({ options, value, onChange, label }: Prop
     // 처음·끝을 넘으면 고무줄처럼 덜 따라와요
     let next = d.startOffset + dy
     const min = -maxIndex * ROW
-    if (next > 0) next *= 0.35
-    else if (next < min) next = min + (next - min) * 0.35
+    if (!loop && next > 0) next *= 0.35
+    else if (!loop && next < min) next = min + (next - min) * 0.35
     paint(next)
   }
 
@@ -144,10 +155,10 @@ export default function WheelPicker<T>({ options, value, onChange, label }: Prop
       return
     }
     // 마지막 100ms 동안의 속도로 관성 거리 계산
+    // (손가락을 멈췄다가 놓으면 속도 0 → 지금 칸에서 바로 멈춰요)
     const recent = d.samples.filter((p) => e.timeStamp - p.t < 100)
-    const first = recent[0] ?? d.samples[0]
-    const dt = Math.max(1, e.timeStamp - first.t)
-    const v = (e.clientY - first.y) / dt // px/ms
+    const first = recent[0]
+    const v = first && recent.length > 1 ? (e.clientY - first.y) / Math.max(1, e.timeStamp - first.t) : 0 // px/ms
     const projected = s.current.offset + v * 220
     const target = clampIndex(Math.round(-projected / ROW))
     const distance = Math.abs(-target * ROW - s.current.offset)
@@ -171,11 +182,19 @@ export default function WheelPicker<T>({ options, value, onChange, label }: Prop
       }}
     >
       <div ref={attachList} className="wheel__list">
-        {options.map((o, i) => (
-          <div key={String(o.value)} className={`wheel__item${i === index ? ' is-selected' : ''}`} role="option" aria-selected={i === index}>
-            {o.label}
-          </div>
-        ))}
+        {Array.from({ length: WINDOW * 2 + 1 }, (_, j) => index - WINDOW + j)
+          .filter((k) => loop || (k >= 0 && k < count))
+          .map((k) => (
+            <div
+              key={k}
+              className={`wheel__item${k === index ? ' is-selected' : ''}`}
+              style={{ top: k * ROW }}
+              role="option"
+              aria-selected={k === index}
+            >
+              {options[mod(k, count)].label}
+            </div>
+          ))}
       </div>
     </div>
   )
