@@ -7,7 +7,7 @@ import Frequency, { type FrequencyStep } from './screens/Frequency'
 import SajuSetup from './screens/SajuSetup'
 import CharReport from './screens/CharReport'
 import { MOMENTS } from './data/moments'
-import { loadMe, saveMe, type Me, type Profile } from './data/profile'
+import { clearMe, loadMe, saveMe, type Me, type Profile } from './data/profile'
 
 /** 주소 끝에 ?onboarding 을 붙이면 저장된 정보가 있어도 온보딩부터 다시 볼 수 있어요 (테스트용) */
 const FORCE_ONBOARDING = new URLSearchParams(window.location.search).has('onboarding')
@@ -61,6 +61,15 @@ export default function App() {
     setOnboarding('report')
   }
 
+  /** 설정 → 입력한 정보 모두 지우기: 빈 사주 설정 화면부터 다시 */
+  const [setupKey, setSetupKey] = useState(0)
+  const resetMe = () => {
+    clearMe()
+    setMe(null)
+    setSetupKey((k) => k + 1)
+    setOnboarding('setup')
+  }
+
   const finishOnboarding = () => {
     if (!me) return
     const next = { ...me, done: true }
@@ -74,7 +83,7 @@ export default function App() {
   if (onboarding === 'report' && me) {
     return (
       <div className="phone">
-        <CharReport me={me} onBack={() => setOnboarding('setup')} onStart={finishOnboarding} />
+        <CharReport me={me} onBack={() => setOnboarding('setup')} onStart={finishOnboarding} onReset={resetMe} />
       </div>
     )
   }
@@ -82,7 +91,7 @@ export default function App() {
   if (onboarding) {
     return (
       <div className="phone">
-        <SajuSetup initial={me?.profile} onSubmit={submitProfile} />
+        <SajuSetup key={setupKey} initial={me?.profile} onSubmit={submitProfile} onReset={resetMe} />
       </div>
     )
   }

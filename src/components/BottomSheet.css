@@ -13,7 +13,11 @@
 }
 
 .sheet-layer--light .sheet-layer__dim {
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.sheet--light .home-indicator {
+  background: #000;
 }
 
 .sheet {

@@ -30,7 +30,20 @@ export type ReportSection = {
   blocks: ReportBlock[]
 }
 
-export type LuckyItem = { label: string; value: string }
+export type Lucky = {
+  /** 행운 색 */
+  color: string
+  colorName: string
+  colorEn: string
+  /** '5 · 10' */
+  number: string
+  direction: string
+  directionEn: string
+  /** 나침반 바늘 각도 (북 0°, 동 90° …). 가운데면 null */
+  angle: number | null
+  /** 행운 루틴 한 줄 (**굵게**) */
+  routine: string
+}
 
 export type Report = {
   /** 'Lemon Yellow Fire' */
@@ -40,7 +53,7 @@ export type Report = {
   surround: Element
   strongest: Element
   needed: Element
-  lucky: { color: string; items: LuckyItem[] }
+  lucky: Lucky
   sections: ReportSection[]
 }
 
@@ -178,7 +191,10 @@ const BY_ELEMENT: Record<
     asFriend: string
     /** 행운 포인트 쓰는 법 */
     luckyUse: string
-    lucky: { colorName: string; color: string; number: string; direction: string; item: string; place: string; time: string }
+    /** 행운 시간대 한 단어 */
+    luckyWhen: string
+    lucky: Omit<Lucky, 'routine'>
+    routine: string
   }
 > = {
   wood: {
@@ -196,9 +212,10 @@ const BY_ELEMENT: Record<
     friend:
       '모임에서 **먼저 계획을 세우고 이끄는 사람**이에요. 여행 일정, 생일 이벤트처럼 누군가 판을 짜야 할 때 자연스럽게 당신에게 시선이 모여요.\n친구들의 성장을 진심으로 응원해서 고민 상담 1순위로 꼽혀요. 듣기만 하는 게 아니라 \'그럼 이렇게 해 보자\'며 방향까지 같이 찾아 주는 타입이에요.\n가끔은 조언보다 **그냥 들어 주는 것**이 더 필요한 친구도 있어요. 그 차이를 알아채면 관계가 한층 깊어져요.',
     asFriend: '이런 친구는 늘 새로운 걸 제안하고 **함께 자라자고 손을 내미는** 사람이에요. 곁에 있으면 나도 모르게 다음 목표를 세우게 돼요.',
-    luckyUse:
-      '민트·초록 계열을 옷이나 폰 배경에 더해 보세요. 눈에 자주 닿는 곳에 두는 게 포인트예요.\n중요한 약속은 **동쪽 방향**의 장소나 **아침 시간**으로 잡으면 흐름이 좋아요. 책상 위에 작은 화분 하나를 두는 것도 좋아요.\n숫자 3과 8은 알람 시간이나 목표 개수처럼 일상 속 작은 선택에 써 보세요. 사소한 것들이 모여 나무 기운을 채워 줘요.',
-    lucky: { colorName: '민트 그린', color: '#5effc7', number: '3 · 8', direction: '동쪽', item: '작은 화분', place: '공원 · 숲길', time: '아침 5~9시' },
+    luckyUse: '중요한 약속은 오전으로 잡아요. 같은 일도 아침에 하면 덜 막혀요.\n폰 배경을 초록 계열로 바꾸거나, 책상에 화분 하나 두는 정도면 돼요.',
+    luckyWhen: '아침',
+    lucky: { colorName: '민트 그린', colorEn: 'Mint Green', color: '#5effc7', number: '3 · 8', direction: '동쪽', directionEn: 'East', angle: 90 },
+    routine: '**아침 일찍** 공원이나 숲길을 걷고, 책상 위 **작은 화분**에 물 주기',
   },
   fire: {
     strong:
@@ -215,9 +232,10 @@ const BY_ELEMENT: Record<
     friend:
       '있기만 해도 **대화가 살아나는 사람**이에요. 리액션이 크고 솔직해서, 친구들은 기분 좋은 일이 생기면 제일 먼저 당신에게 알려 줘요.\n어색한 자리에서도 먼저 말을 걸고 분위기를 풀어 주는 역할을 자주 맡아요. 당신을 통해 친해진 친구들도 많을 거예요.\n다만 감정 표현이 큰 만큼 **서운함도 금방 드러날** 수 있어요. 솔직함에 다정함을 한 스푼 더하면 누구도 대신할 수 없는 친구가 돼요.',
     asFriend: '이런 친구는 **밝고 솔직하게 분위기를 띄워 주는** 사람이에요. 곁에 있으면 숨겨 둔 내 마음도 자연스럽게 꺼내게 돼요.',
-    luckyUse:
-      '핫 핑크나 따뜻한 색을 옷, 립, 소품에 한 군데 더해 보세요. 생기가 돌면서 표정까지 밝아져요.\n중요한 약속은 **남쪽 방향**의 장소나 **한낮**으로 잡으면 흐름이 좋아요. 햇살이 잘 드는 카페가 특히 잘 맞아요.\n밤에는 향초나 무드등을 켜 두고 하루를 마무리해 보세요. 작은 불빛이 다음 날의 에너지를 채워 줘요.',
-    lucky: { colorName: '핫 핑크', color: '#ff39c7', number: '2 · 7', direction: '남쪽', item: '향초 · 무드등', place: '햇살 좋은 카페', time: '한낮 11~13시' },
+    luckyUse: '발표나 고백처럼 떨리는 일은 해가 떠 있을 때 하는 게 좋아요.\n립이나 양말처럼 작은 데에 핑크를 하나 넣어 보세요. 생각보다 기분이 확 올라가요.',
+    luckyWhen: '한낮',
+    lucky: { colorName: '핫 핑크', colorEn: 'Hot Pink', color: '#ff39c7', number: '2 · 7', direction: '남쪽', directionEn: 'South', angle: 180 },
+    routine: '**한낮**엔 햇살 드는 카페 창가 자리, 밤엔 **향초** 하나 켜 두기',
   },
   earth: {
     strong:
@@ -234,9 +252,10 @@ const BY_ELEMENT: Record<
     friend:
       '**말없이 곁을 지켜 주는 사람**이에요. 약속을 잘 지키고 변함이 없어서, 오래 알수록 진가가 드러나요.\n친구가 힘들 때 거창한 말 대신 밥을 사 주거나 집 앞까지 찾아가는 타입이에요. 그 묵묵한 다정함에 많은 친구들이 기대고 있어요.\n가끔은 **당신의 이야기도 먼저 꺼내 보세요.** 늘 들어 주는 쪽이었던 당신을 궁금해하는 친구가 생각보다 많아요.',
     asFriend: '이런 친구는 **언제 연락해도 그 자리에 있는** 사람이에요. 곁에 있으면 들뜬 마음이 차분하게 가라앉아요.',
-    luckyUse:
-      '오렌지·베이지 같은 따뜻한 흙빛을 옷이나 소품에 더해 보세요. 마음이 편안해지고 표정도 부드러워져요.\n중요한 일은 멀리 가기보다 **익숙한 동네, 집 근처**에서 하는 게 흐름이 좋아요. 여유로운 늦은 오후 시간대도 잘 맞아요.\n아침마다 같은 도자기 머그에 따뜻한 차를 마셔 보세요. 반복되는 작은 의식이 흙 기운을 차곡차곡 쌓아 줘요.',
-    lucky: { colorName: '선셋 오렌지', color: '#ff5500', number: '5 · 10', direction: '중앙', item: '도자기 머그', place: '텃밭 · 정원', time: '늦은 오후' },
+    luckyUse: '낯선 곳보다 자주 가는 동네 카페에서 일이 잘 풀리는 타입이에요.\n아침마다 같은 머그에 차를 마시는 것처럼, 매일 똑같이 하는 작은 루틴 하나가 운을 붙잡아 줘요.',
+    luckyWhen: '늦은 오후',
+    lucky: { colorName: '선셋 오렌지', colorEn: 'Sunset Orange', color: '#ff5500', number: '5 · 10', direction: '중앙', directionEn: 'Center', angle: null },
+    routine: '**늦은 오후**, 집 근처에서 **도자기 머그**에 따뜻한 차 한 잔',
   },
   metal: {
     strong:
@@ -253,9 +272,10 @@ const BY_ELEMENT: Record<
     friend:
       '**정확하고 공정한 사람**이에요. 듣기 좋은 말보다 필요한 말을 해 주고, 내 사람이라면 끝까지 편을 들어 줘요.\n친구가 고민을 털어놓으면 감정에 휩쓸리기보다 상황을 차분하게 정리해 줘서 \'머리가 맑아졌다\'는 말을 자주 들어요.\n다만 조언이 **정답처럼 들려 서운할** 때도 있어요. 해결책을 말하기 전에 \'많이 힘들었겠다\' 한마디를 먼저 건네 보세요.',
     asFriend: '이런 친구는 **흐릿한 고민을 또렷하게 정리해 주는** 사람이에요. 곁에 있으면 미뤄 둔 결정을 시원하게 내리게 돼요.',
-    luckyUse:
-      '네온 라임이나 실버 포인트를 옷, 네일, 액세서리에 더해 보세요. 전체 분위기가 단정하고 또렷해져요.\n중요한 약속은 **서쪽 방향**의 장소나 **저녁 시간**으로 잡으면 흐름이 좋아요. 정돈된 서점이나 전시장도 잘 맞아요.\n숫자 4와 9는 마감일이나 목표 숫자로 써 보세요. 끝맺는 힘이 필요할 때 작은 응원이 돼요.',
-    lucky: { colorName: '네온 라임', color: '#c7f957', number: '4 · 9', direction: '서쪽', item: '실버 액세서리', place: '서점 · 전시장', time: '저녁 17~19시' },
+    luckyUse: '미뤄 둔 결정은 저녁에 해요. 하루를 정리하는 시간이라 판단이 깔끔해져요.\n반지나 시계 같은 실버 액세서리 하나, 네일에 라임 포인트 하나면 충분해요.',
+    luckyWhen: '해 질 녘',
+    lucky: { colorName: '네온 라임', colorEn: 'Neon Lime', color: '#c7f957', number: '4 · 9', direction: '서쪽', directionEn: 'West', angle: 270 },
+    routine: '**해 질 무렵** 서점에 들르고, **실버 액세서리** 하나 챙기기',
   },
   water: {
     strong:
@@ -272,9 +292,10 @@ const BY_ELEMENT: Record<
     friend:
       '**이야기를 끝까지 들어 주는 사람**이에요. 상대의 마음을 빨리 읽어서, 말하지 않아도 알아주는 친구로 통해요.\n누구와도 잘 어울리고 어떤 이야기든 편견 없이 받아 줘서, 친구들이 다른 데선 못 한 이야기를 당신에게 털어놓곤 해요.\n다만 남의 감정을 너무 잘 받아들이다 보면 **내가 지칠 수** 있어요. 듣는 만큼 나도 기댈 곳을 하나쯤 꼭 만들어 두세요.',
     asFriend: '이런 친구는 **말하지 않아도 마음을 알아채 주는** 사람이에요. 곁에 있으면 꽉 쥐고 있던 걱정이 스르르 풀려요.',
-    luckyUse:
-      '아쿠아 블루나 투명한 소품을 가까이 두어 보세요. 텀블러, 유리컵처럼 매일 쓰는 물건이면 더 좋아요.\n중요한 약속은 **북쪽 방향**의 장소나 **밤 시간**으로 잡으면 흐름이 좋아요. 바다나 강이 보이는 곳이라면 더할 나위 없어요.\n좋아하는 향수를 정해 두고 중요한 날에 뿌려 보세요. 향이 기억을 깨우듯, 좋은 흐름을 불러오는 신호가 돼요.',
-    lucky: { colorName: '아쿠아 블루', color: '#13e2ff', number: '1 · 6', direction: '북쪽', item: '텀블러 · 향수', place: '바다 · 강가', time: '밤 21~23시' },
+    luckyUse: '생각 정리는 밤에 해요. 낮에 꼬였던 일도 밤에 다시 보면 길이 보여요.\n텀블러를 늘 들고 다니면서 물을 자주 마시는 것, 그게 제일 쉬운 행운 루틴이에요.',
+    luckyWhen: '밤',
+    lucky: { colorName: '아쿠아 블루', colorEn: 'Aqua Blue', color: '#13e2ff', number: '1 · 6', direction: '북쪽', directionEn: 'North', angle: 0 },
+    routine: '**밤 산책**은 물가 쪽으로, 자기 전 **텀블러**에 물 가득 채워 두기',
   },
 }
 
@@ -298,17 +319,7 @@ export function buildReport(saju: Saju): Report {
     surround,
     strongest,
     needed,
-    lucky: {
-      color: L.color,
-      items: [
-        { label: '행운 색', value: L.colorName },
-        { label: '행운 숫자', value: L.number },
-        { label: '방향', value: L.direction },
-        { label: '아이템', value: L.item },
-        { label: '장소', value: L.place },
-        { label: '시간', value: L.time },
-      ],
-    },
+    lucky: { ...L, routine: BY_ELEMENT[needed].routine },
     sections: [
       {
         key: 'elements',
@@ -379,10 +390,10 @@ export function buildReport(saju: Saju): Report {
         tags: [`${L.colorName}`, `${L.direction}`],
         blocks: [
           {
-            heading: `${elementLabel(needed)} 기운이\n행운을 불러요`,
-            body: `행운 포인트는 내 사주에서 **가장 채우고 싶은 ${elementLabel(needed)} 기운**을 기준으로 골랐어요. 부족한 기운을 일상에서 조금씩 더해 주면 전체 흐름이 부드럽게 균형을 찾아요.\n거창하게 바꿀 필요는 없어요. 옷 색깔 하나, 약속 장소 하나처럼 **작은 선택**에 행운 포인트를 넣어 보세요.\n시험, 면접, 중요한 약속이 있는 날엔 행운 색을 한 군데 더해 보세요. 작은 것 하나가 하루의 흐름을 바꿔 줘요.`,
+            heading: `${elementLabel(needed)} 기운을\n채우면 풀려요`,
+            body: `내 사주엔 ${ELEMENT_META[needed].ko} 기운이 ${saju.counts[needed] === 0 ? '하나도 없어서' : '적은 편이라'}, 행운 포인트를 전부 **${ELEMENT_META[needed].ko} 쪽**으로 맞췄어요.\n${L.colorName}, ${L.direction}, ${BY_ELEMENT[needed].luckyWhen}. 다 챙길 필요 없고 하나만 걸려도 충분해요.`,
           },
-          { heading: '행운 포인트,\n이렇게 써 보세요', body: BY_ELEMENT[needed].luckyUse },
+          { heading: '이렇게\n써먹어요', body: BY_ELEMENT[needed].luckyUse },
         ],
       },
     ],

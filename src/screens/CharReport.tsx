@@ -1,9 +1,10 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import StatusBar from '../components/StatusBar'
 import BottomSheet from '../components/BottomSheet'
-import { CaretLeftIcon, CaretRightIcon, CloseIcon } from '../components/icons'
+import SettingsSheet from '../components/SettingsSheet'
+import { CaretLeftIcon, CaretRightIcon, CloseIcon, SettingsIcon } from '../components/icons'
 import type { Me } from '../data/profile'
-import { buildReport, type ReportSection, type SectionKey } from '../data/report'
+import { buildReport, type Lucky, type ReportSection, type SectionKey } from '../data/report'
 import { BRANCHES, ELEMENTS, ELEMENT_META, STEMS, elementLabel, type Pillar } from '../data/saju'
 import './CharReport.css'
 
@@ -12,6 +13,8 @@ type Props = {
   onBack: () => void
   /** 온보딩 중이면 아래에 '시작하기' 버튼이 보여요 */
   onStart?: () => void
+  /** 설정 → 입력한 정보 모두 지우기 */
+  onReset: () => void
 }
 
 type SheetKey = SectionKey | 'pillars'
@@ -43,7 +46,8 @@ function Rich({ text }: { text: string }) {
 const dotted = (ymd: string) => ymd.replace(/-/g, '.')
 
 /** 온보딩 2단계 & 내 캐해 보기: 나의 캐해 리포트 (피그마 '캐해 리포트', '리포트 세부') */
-export default function CharReport({ me, onBack, onStart }: Props) {
+export default function CharReport({ me, onBack, onStart, onReset }: Props) {
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const report = useMemo(() => buildReport(me.saju), [me.saju])
   const { profile, saju } = me
   const core = ELEMENT_META[report.core]
@@ -66,17 +70,21 @@ export default function CharReport({ me, onBack, onStart }: Props) {
     '--core': core.strong,
     '--core-soft': core.soft,
     '--core-tint': core.tint,
+    '--core-ink': core.ink,
   } as CSSProperties
 
   return (
     <div className={`report${onStart ? ' report--onboarding' : ''}`} style={theme}>
       <div className="report__scroll">
-        <StatusBar />
+        <StatusBar tone="dark" />
         <header className="report__header">
           <button className="report__back" onClick={onBack} aria-label="뒤로">
             <CaretLeftIcon size={32} />
           </button>
           <h1>나의 캐해 리포트</h1>
+          <button className="report__gear" onClick={() => setSettingsOpen(true)} aria-label="설정">
+            <SettingsIcon />
+          </button>
         </header>
 
         <button className="report__manse" onClick={() => open('pillars')}>
@@ -85,7 +93,7 @@ export default function CharReport({ me, onBack, onStart }: Props) {
         </button>
 
         <h2 className="report__type">
-          <OutlineText lines={[report.typeName]} className="outline-text--type" />
+          <span className="report__type-text">{report.typeName}</span>
         </h2>
         <p className="report__sub">
           <em>{elementLabel(report.core)}의 기운</em>을 중심에 가진 타입
@@ -123,6 +131,15 @@ export default function CharReport({ me, onBack, onStart }: Props) {
           <div className="home-indicator" />
         </div>
       )}
+
+      <SettingsSheet
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        items={[
+          { label: '사주 정보 수정하기', onClick: onBack },
+          { label: '입력한 정보 모두 지우기', onClick: onReset, danger: true },
+        ]}
+      />
 
       <BottomSheet
         open={active !== null}
@@ -184,19 +201,7 @@ function SectionDetail({ section, report, saju }: { section: ReportSection; repo
         </div>
       )}
 
-      {section.key === 'lucky' && (
-        <ul className="lucky">
-          {report.lucky.items.map((it, i) => (
-            <li key={it.label}>
-              <span className="lucky__label">{it.label}</span>
-              <span className="lucky__value">
-                {i === 0 && <i className="lucky__swatch" style={{ background: report.lucky.color }} />}
-                {it.value}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
+      {section.key === 'lucky' && <LuckyCards lucky={report.lucky} />}
 
       {section.blocks.map((b) => (
         <article key={b.heading} className="detail__block">
@@ -211,6 +216,51 @@ function SectionDetail({ section, report, saju }: { section: ReportSection; repo
         </article>
       ))}
     </>
+  )
+}
+
+/** 행운 포인트: 행운 색 카드 + 숫자·방향 카드 + 행운 루틴 한 줄 */
+function LuckyCards({ lucky }: { lucky: Lucky }) {
+  return (
+    <div className="lucky" style={{ '--lucky': lucky.color } as CSSProperties}>
+      <div className="lucky__color" style={{ background: lucky.color }}>
+        <span className="lucky__eyebrow">Lucky Color</span>
+        <strong className="lucky__big">{lucky.colorEn}</strong>
+        <span className="lucky__ko">{lucky.colorName}</span>
+      </div>
+      <div className="lucky__row">
+        <div className="lucky__card">
+          <span className="lucky__eyebrow">Lucky No.</span>
+          <strong className="lucky__num" style={{ color: lucky.color }}>
+            {lucky.number}
+          </strong>
+        </div>
+        <div className="lucky__card">
+          <span className="lucky__eyebrow">Direction</span>
+          <span className="lucky__dir">
+            <svg className="lucky__compass" viewBox="0 0 40 40" aria-hidden>
+              <circle cx="20" cy="20" r="18.5" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
+              {lucky.angle === null ? (
+                <circle cx="20" cy="20" r="6" fill={lucky.color} />
+              ) : (
+                <g transform={`rotate(${lucky.angle} 20 20)`}>
+                  <path d="M20 5 25 20H15Z" fill={lucky.color} />
+                  <path d="M20 35 25 20H15Z" fill="rgba(255,255,255,0.3)" />
+                </g>
+              )}
+            </svg>
+            <span>
+              <strong>{lucky.directionEn}</strong>
+              <small>{lucky.direction}</small>
+            </span>
+          </span>
+        </div>
+      </div>
+      <div className="lucky__routine">
+        <span className="lucky__eyebrow">Lucky Routine</span>
+        <Rich text={lucky.routine} />
+      </div>
+    </div>
   )
 }
 
