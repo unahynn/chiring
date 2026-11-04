@@ -213,6 +213,13 @@
   height: calc(100% - 225px);
 }
 
+/* 스크롤하면 글이 큰 제목 아래로 자연스럽게 사라져요 (둥근 모서리 밖으로도 안 비치게) */
+.detail-sheet .sheet__body {
+  border-radius: 60px 60px 0 0;
+  mask-image: linear-gradient(to bottom, transparent 44px, #000 76px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 44px, #000 76px);
+}
+
 .detail-sheet .sheet__overhang {
   bottom: calc(100% - 46px);
   z-index: 2;
