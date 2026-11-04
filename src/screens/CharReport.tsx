@@ -6,6 +6,8 @@ import { CaretLeftIcon, CaretRightIcon, CloseIcon, SettingsIcon } from '../compo
 import type { Me } from '../data/profile'
 import { buildReport, type Lucky, type ReportSection, type SectionKey } from '../data/report'
 import { BRANCHES, ELEMENTS, ELEMENT_META, STEMS, elementLabel, type Pillar } from '../data/saju'
+import type { Settings } from '../data/settings'
+import './onboarding.css'
 import './CharReport.css'
 
 type Props = {
@@ -15,6 +17,9 @@ type Props = {
   onStart?: () => void
   /** 설정 → 입력한 정보 모두 지우기 */
   onReset: () => void
+  theme: 'light' | 'dark'
+  settings: Settings
+  onSettingsChange: (next: Settings) => void
 }
 
 type SheetKey = SectionKey | 'pillars'
@@ -46,7 +51,7 @@ function Rich({ text }: { text: string }) {
 const dotted = (ymd: string) => ymd.replace(/-/g, '.')
 
 /** 온보딩 2단계 & 내 캐해 보기: 나의 캐해 리포트 (피그마 '캐해 리포트', '리포트 세부') */
-export default function CharReport({ me, onBack, onStart, onReset }: Props) {
+export default function CharReport({ me, onBack, onStart, onReset, theme, settings, onSettingsChange }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const report = useMemo(() => buildReport(me.saju), [me.saju])
   const { profile, saju } = me
@@ -66,7 +71,7 @@ export default function CharReport({ me, onBack, onStart, onReset }: Props) {
     profile.birthTime ?? '시간 모름',
   ]
 
-  const theme = {
+  const coreVars = {
     '--core': core.strong,
     '--core-soft': core.soft,
     '--core-tint': core.tint,
@@ -74,9 +79,9 @@ export default function CharReport({ me, onBack, onStart, onReset }: Props) {
   } as CSSProperties
 
   return (
-    <div className={`report${onStart ? ' report--onboarding' : ''}`} style={theme}>
+    <div className={`report onb${onStart ? ' report--onboarding' : ''}`} data-theme={theme} style={coreVars}>
       <div className="report__scroll">
-        <StatusBar tone="dark" />
+        <StatusBar tone={theme === 'dark' ? 'light' : 'dark'} />
         <header className="report__header">
           <button className="report__back" onClick={onBack} aria-label="뒤로">
             <CaretLeftIcon size={32} />
@@ -93,7 +98,7 @@ export default function CharReport({ me, onBack, onStart, onReset }: Props) {
         </button>
 
         <h2 className="report__type">
-          <span className="report__type-text">{report.typeName}</span>
+          <OutlineText lines={[report.typeName]} className="outline-text--type" />
         </h2>
         <p className="report__sub">
           <em>{elementLabel(report.core)}의 기운</em>을 중심에 가진 타입
@@ -135,10 +140,11 @@ export default function CharReport({ me, onBack, onStart, onReset }: Props) {
       <SettingsSheet
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        items={[
-          { label: '사주 정보 수정하기', onClick: onBack },
-          { label: '입력한 정보 모두 지우기', onClick: onReset, danger: true },
-        ]}
+        tone={theme}
+        settings={settings}
+        onChange={onSettingsChange}
+        onEdit={onBack}
+        onReset={onReset}
       />
 
       <BottomSheet
@@ -159,7 +165,7 @@ export default function CharReport({ me, onBack, onStart, onReset }: Props) {
         }
       >
         <div className="detail" key={shown}>
-          {shown === 'pillars' ? <PillarsDetail me={me} /> : section && <SectionDetail section={section} report={report} saju={saju} />}
+          {shown === 'pillars' ? <PillarsDetail me={me} settings={settings} /> : section && <SectionDetail section={section} report={report} saju={saju} />}
         </div>
       </BottomSheet>
     </div>
@@ -267,7 +273,7 @@ function LuckyCards({ lucky }: { lucky: Lucky }) {
 const STEM_SOUND: Record<string, string> = { wood: '목', fire: '화', earth: '토', metal: '금', water: '수' }
 
 /** 만세력: 시주·일주·월주·년주 네 기둥 */
-function PillarsDetail({ me }: { me: Me }) {
+function PillarsDetail({ me, settings }: { me: Me; settings: Settings }) {
   const { saju, profile } = me
   const cols: { label: string; p: Pillar | null }[] = [
     { label: '생시', p: saju.hour },
@@ -321,7 +327,10 @@ function PillarsDetail({ me }: { me: Me }) {
         ))}
       </ul>
       <p className="pillars__note">
-        서울 기준으로 표준시보다 30분 늦춰 계산했고, 밤 11시~12시 출생은 일주를 그날로 보는 야자시 기준이에요.
+        {settings.seoulTime ? '서울 기준으로 태어난 시간에서 30분을 빼서 계산했고, ' : '시간 보정 없이 계산했고, '}
+        {settings.lateRat ? '밤 11시~12시 출생은 일주를 그날로 보는 야자시 기준이에요.' : '밤 11시~12시 출생은 일주를 다음 날로 보는 조자시 기준이에요.'}
+        <br />
+        설정에서 바꿀 수 있어요.
       </p>
     </>
   )

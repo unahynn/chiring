@@ -5,12 +5,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #fff;
-  color: #000;
-}
-
-.setup .home-indicator {
-  background: #000;
 }
 
 @media (min-width: 500px) {
@@ -35,7 +29,7 @@
   height: 28px;
   display: grid;
   place-items: center;
-  color: #000;
+  color: var(--onb-text);
 }
 
 .setup__header h1 {
@@ -72,14 +66,14 @@
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0 0 1px var(--onb-ring);
 }
 
 .setup__avatar-empty {
   display: grid;
   place-items: center;
-  background: #f1f1f1;
-  color: #a6a6a6;
+  background: var(--onb-avatar);
+  color: var(--onb-avatar-icon);
 }
 
 .setup__avatar-badge {
@@ -91,7 +85,7 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  border: 2px solid #fff;
+  border: 2px solid var(--onb-bg);
   background: #ff39c7;
   color: #fff;
   font-size: 18px;
@@ -115,7 +109,7 @@
   font-size: 22px;
   font-weight: 700;
   letter-spacing: -0.44px;
-  color: #000;
+  color: var(--onb-text);
 }
 
 .setup__name-input {
@@ -130,13 +124,13 @@
 }
 
 .setup__name-input::placeholder {
-  color: #c2c2c2;
+  color: var(--onb-hint);
 }
 
 .setup__name-edit {
   width: 20px;
   height: 20px;
-  color: #a6abb0;
+  color: var(--onb-pencil);
 }
 
 /* ---------- 입력 칸 ---------- */
@@ -179,8 +173,8 @@
   width: 72px;
   height: 40px;
   border-radius: 20px;
-  background: #e8e8e8;
-  color: #9e9e9e;
+  background: var(--onb-chip);
+  color: var(--onb-chip-text);
   font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.32px;
@@ -202,10 +196,10 @@
   height: 42px;
   margin-top: 16px;
   padding: 0 20px;
-  border: 1px solid #e8e8e8;
+  border: var(--onb-input-border);
   border-radius: 21px;
-  background: #f1f1f1;
-  color: #434343;
+  background: var(--onb-input-bg);
+  color: var(--onb-input-text);
   font-family: inherit;
   font-size: 16px;
   font-weight: 400;
@@ -217,7 +211,7 @@
 
 .setup__input::placeholder,
 .setup__input.is-empty {
-  color: #b3b3b3;
+  color: var(--onb-hint);
 }
 
 .setup__input:focus-visible {
@@ -252,8 +246,8 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #dcdcdc;
-  color: #fff;
+  background: var(--onb-clear);
+  color: var(--onb-clear-text);
 }
 
 /* ---------- 아래 버튼 ---------- */
@@ -264,36 +258,26 @@
   padding: 0 20px;
 }
 
-.cta {
-  display: block;
-  width: 100%;
-  height: 56px;
-  border-radius: 28px;
-  background: #121212;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  transition: background 0.2s, color 0.2s, transform 0.1s;
-}
-
-.cta:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.cta:disabled {
-  background: #e8e8e8;
-  color: #b3b3b3;
-  cursor: default;
-}
-
 /* ---------- 태어난 시간 시트 ---------- */
 .time-sheet {
   height: 430px;
   box-shadow: none;
-  /* 휠 글자색 (밝은 시트) */
+  /* 휠 글자색 · 가운데 띠 · 닫기 버튼 (밝은 시트) */
   --wheel-dim: #999;
   --wheel-on: #000;
+  --time-band: #eeedee;
+  --time-close: #dddcdd;
+  --time-close-text: #8a8a8a;
+  --time-close-glow: rgba(0, 0, 0, 0.08);
+}
+
+.sheet--dark.time-sheet {
+  --wheel-dim: #7f7f7f;
+  --wheel-on: #fff;
+  --time-band: #1c1c1c;
+  --time-close: #1b1b1b;
+  --time-close-text: #b8b8b8;
+  --time-close-glow: rgba(255, 255, 255, 0.06);
 }
 
 .time-sheet__head {
@@ -317,9 +301,9 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #dddcdd;
-  color: #8a8a8a;
-  box-shadow: 0 0 22px rgba(0, 0, 0, 0.08);
+  background: var(--time-close);
+  color: var(--time-close-text);
+  box-shadow: 0 0 22px var(--time-close-glow);
 }
 
 .time-sheet__wheels {
@@ -337,7 +321,7 @@
   top: 67px;
   height: 61px;
   border-radius: 12px;
-  background: #eeedee;
+  background: var(--time-band);
   pointer-events: none;
 }
 
