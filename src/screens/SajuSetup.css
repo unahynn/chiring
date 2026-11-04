@@ -105,8 +105,8 @@
   width: 150px;
   padding: 0;
   border: 0;
-  border-bottom: 1.5px solid #6e767c;
   background: none;
+  caret-color: #ff39c7;
   text-align: center;
   font-family: inherit;
   outline: none;
@@ -114,10 +114,6 @@
 
 .setup__name-input::placeholder {
   color: #5c5c5c;
-}
-
-.setup__name-input:focus {
-  border-color: #ff39c7;
 }
 
 .setup__name-edit {

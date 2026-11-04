@@ -2,36 +2,39 @@
 .wheel {
   position: relative;
   height: 195px;
-  padding: 65px 0;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
   outline: none;
   /* 위·아래 칸은 살짝 흐려져요 */
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), #000 30%, #000 70%, rgba(0, 0, 0, 0.55));
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), #000 30%, #000 70%, rgba(0, 0, 0, 0.55));
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), #000 32%, #000 68%, rgba(0, 0, 0, 0.5));
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), #000 32%, #000 68%, rgba(0, 0, 0, 0.5));
 }
 
-.wheel::-webkit-scrollbar {
-  display: none;
+.wheel:active {
+  cursor: grabbing;
+}
+
+.wheel__list {
+  will-change: transform;
 }
 
 .wheel__item {
   height: 65px;
-  display: grid;
-  place-items: center;
-  scroll-snap-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700;
+  line-height: 1;
   letter-spacing: -0.44px;
+  font-variant-numeric: tabular-nums;
   color: #7f7f7f;
-  cursor: pointer;
-  user-select: none;
-  transition: color 0.15s;
+  transition: color 0.12s;
 }
 
 .wheel__item.is-selected {
   color: #fff;
-  font-weight: 700;
 }
