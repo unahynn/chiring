@@ -8,6 +8,7 @@ import SajuSetup from './screens/SajuSetup'
 import CharReport from './screens/CharReport'
 import { MOMENTS } from './data/moments'
 import { clearMe, loadMe, saveMe, type Me, type Profile } from './data/profile'
+import { loadSettings, saveSettings, useResolvedTheme, type Settings } from './data/settings'
 
 /** 주소 끝에 ?onboarding 을 붙이면 저장된 정보가 있어도 온보딩부터 다시 볼 수 있어요 (테스트용) */
 const FORCE_ONBOARDING = new URLSearchParams(window.location.search).has('onboarding')
@@ -25,6 +26,9 @@ export default function App() {
   const [me, setMe] = useState<Me | null>(loadMe)
   /** 온보딩 단계: 사주 설정 → 캐해 리포트. 끝나면 null (홈) */
   const [onboarding, setOnboarding] = useState<'setup' | 'report' | null>(() => (FORCE_ONBOARDING || !me?.done ? 'setup' : null))
+  /** 설정 (화면 모드 · 알림 · 사주 계산 기준) */
+  const [settings, setSettings] = useState<Settings>(loadSettings)
+  const theme = useResolvedTheme(settings.theme)
   const [tab, setTab] = useState<TabKey>('friends')
   /** 주파수 탭 안에서 몇 번째 화면인지. 첫 화면이 아니면 탭바를 숨겨요. */
   const [freqStep, setFreqStep] = useState<FrequencyStep>('home')
@@ -41,19 +45,41 @@ export default function App() {
     setStoryId(id)
   }
 
-  const submitProfile = async (profile: Profile) => {
-    // 만세력 계산 라이브러리는 커서 이때만 불러와요
+  /** 프로필 → 사주 계산 (만세력 계산 라이브러리는 커서 이때만 불러와요) */
+  const calcSaju = async (profile: Profile, s: Settings) => {
     const { computeSaju } = await import('./data/sajuCalc')
     const [y, m, d] = profile.birthDate.split('-').map(Number)
     const [hh, mm] = profile.birthTime?.split(':').map(Number) ?? []
-    const saju = computeSaju({
-      calendar: profile.calendar,
-      leap: profile.leap,
-      year: y,
-      month: m,
-      day: d,
-      time: profile.birthTime ? { hour: hh, minute: mm } : null,
-    })
+    return computeSaju(
+      {
+        calendar: profile.calendar,
+        leap: profile.leap,
+        year: y,
+        month: m,
+        day: d,
+        time: profile.birthTime ? { hour: hh, minute: mm } : null,
+      },
+      { seoulTime: s.seoulTime, lateRat: s.lateRat },
+    )
+  }
+
+  const changeSettings = async (next: Settings) => {
+    const prev = settings
+    setSettings(next)
+    saveSettings(next)
+    // 사주 계산 기준이 바뀌면 이미 본 사주도 다시 계산해요
+    if (me && (prev.seoulTime !== next.seoulTime || prev.lateRat !== next.lateRat)) {
+      const saju = await calcSaju(me.profile, next)
+      if (saju) {
+        const updated = { ...me, saju }
+        setMe(updated)
+        saveMe(updated)
+      }
+    }
+  }
+
+  const submitProfile = async (profile: Profile) => {
+    const saju = await calcSaju(profile, settings)
     if (!saju) return
     const next: Me = { profile, saju, done: false }
     setMe(next)
@@ -83,7 +109,15 @@ export default function App() {
   if (onboarding === 'report' && me) {
     return (
       <div className="phone">
-        <CharReport me={me} onBack={() => setOnboarding('setup')} onStart={finishOnboarding} onReset={resetMe} />
+        <CharReport
+          me={me}
+          onBack={() => setOnboarding('setup')}
+          onStart={finishOnboarding}
+          onReset={resetMe}
+          theme={theme}
+          settings={settings}
+          onSettingsChange={changeSettings}
+        />
       </div>
     )
   }
@@ -91,7 +125,15 @@ export default function App() {
   if (onboarding) {
     return (
       <div className="phone">
-        <SajuSetup key={setupKey} initial={me?.profile} onSubmit={submitProfile} onReset={resetMe} />
+        <SajuSetup
+          key={setupKey}
+          initial={me?.profile}
+          onSubmit={submitProfile}
+          onReset={resetMe}
+          theme={theme}
+          settings={settings}
+          onSettingsChange={changeSettings}
+        />
       </div>
     )
   }

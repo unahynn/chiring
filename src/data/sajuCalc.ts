@@ -11,12 +11,15 @@ function pillarOf(ganzhi: string, dayStem: number): Pillar {
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-/**
- * 네 기둥 계산.
- * - 한국 표준시(동경 135°)와 서울 실제 태양 시간(약 127°)의 차이만큼 30분을 빼서 시주를 정해요.
- * - 밤 11시~12시(야자시)에 태어나면 일주는 그날 그대로, 시주만 다음 자시로 봐요.
- */
-export function computeSaju(birth: Birth): Saju | null {
+export type CalcOptions = {
+  /** 한국 표준시(동경 135°)와 서울 실제 태양 시간(약 127°)의 차이만큼 30분 빼기 */
+  seoulTime: boolean
+  /** 야자시: 밤 11~12시 출생은 일주를 그날로 (끄면 다음 날로) */
+  lateRat: boolean
+}
+
+/** 네 기둥 계산 (기본: 서울 보정 + 야자시) */
+export function computeSaju(birth: Birth, opts: CalcOptions = { seoulTime: true, lateRat: true }): Saju | null {
   const solar = toSolar(birth)
   if (!solar) return null
 
@@ -24,7 +27,7 @@ export function computeSaju(birth: Birth): Saju | null {
   let hour = 12
   let minute = 0
   if (birth.time) {
-    const t = new Date(Date.UTC(year, month - 1, day, birth.time.hour, birth.time.minute - 30))
+    const t = new Date(Date.UTC(year, month - 1, day, birth.time.hour, birth.time.minute - (opts.seoulTime ? 30 : 0)))
     year = t.getUTCFullYear()
     month = t.getUTCMonth() + 1
     day = t.getUTCDate()
@@ -33,7 +36,7 @@ export function computeSaju(birth: Birth): Saju | null {
   }
 
   const ec = Solar.fromYmdHms(year, month, day, hour, minute, 0).getLunar().getEightChar()
-  ec.setSect(2)
+  ec.setSect(opts.lateRat ? 2 : 1)
   const dayStem = STEMS.findIndex((s) => s.hanja === ec.getDay()[0])
   const pillars = {
     year: pillarOf(ec.getYear(), dayStem),

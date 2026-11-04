@@ -1,0 +1,100 @@
+/* 온보딩(사주 설정 · 캐해 리포트) 색. 설정 → 화면 모드에 따라 라이트/다크가 바뀌어요 */
+.onb {
+  --onb-bg: #fff;
+  --onb-text: #000;
+  --onb-indicator: #000;
+  --onb-muted: #4a4a4a;
+  --onb-ring: rgba(0, 0, 0, 0.12);
+  --onb-avatar: #f1f1f1;
+  --onb-avatar-icon: #a6a6a6;
+  --onb-hint: #b3b3b3;
+  --onb-pencil: #a6abb0;
+  --onb-chip: #e8e8e8;
+  --onb-chip-text: #9e9e9e;
+  --onb-input-bg: #f1f1f1;
+  --onb-input-border: 1px solid #e8e8e8;
+  --onb-input-text: #434343;
+  --onb-clear: #dcdcdc;
+  --onb-clear-text: #fff;
+  --onb-cta: #121212;
+  --onb-cta-text: #fff;
+  --onb-cta-off: #e8e8e8;
+  --onb-cta-off-text: #b3b3b3;
+  --onb-pill: #f2f2f2;
+  --onb-box-shadow: 0 6px 30px rgba(0, 0, 0, 0.09);
+  background: var(--onb-bg);
+  color: var(--onb-text);
+}
+
+.onb[data-theme='dark'] {
+  --onb-bg: #0e0e0e;
+  --onb-text: #fff;
+  --onb-indicator: #fff;
+  --onb-muted: #b5b5b5;
+  --onb-ring: rgba(255, 255, 255, 0.28);
+  --onb-avatar: #2c2c2c;
+  --onb-avatar-icon: #8c8c8c;
+  --onb-hint: #6b6b6b;
+  --onb-pencil: #6e767c;
+  --onb-chip: #2c2c2c;
+  --onb-chip-text: #7a7a7a;
+  --onb-input-bg: #1a1a1a;
+  --onb-input-border: 1.5px solid #8c8c8c;
+  --onb-input-text: #fff;
+  --onb-clear: #3a3a3a;
+  --onb-clear-text: #bdbdbd;
+  --onb-cta: #f4f2f4;
+  --onb-cta-text: #000;
+  --onb-cta-off: #2c2c2c;
+  --onb-cta-off-text: #6b6b6b;
+  --onb-pill: #d9d9d9;
+  --onb-box-shadow: 0 0 38px rgba(255, 255, 255, 0.13);
+}
+
+.onb .home-indicator {
+  background: var(--onb-indicator);
+}
+
+/* 시트 안의 홈 인디케이터는 시트 색을 따라가요 */
+.onb .sheet--light {
+  --onb-indicator: #000;
+}
+
+.onb .sheet--dark {
+  --onb-indicator: #fff;
+}
+
+/* 아래 큰 버튼 (나의 캐해 확인하기 · 완료 · 치링 시작하기) */
+.onb .cta {
+  display: block;
+  width: 100%;
+  height: 56px;
+  border-radius: 28px;
+  background: var(--onb-cta);
+  color: var(--onb-cta-text);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+
+/* 시트 안 버튼은 시트 색 기준 */
+.onb .sheet--light .cta {
+  background: #121212;
+  color: #fff;
+}
+
+.onb .sheet--dark .cta {
+  background: #f4f2f4;
+  color: #000;
+}
+
+.onb .cta:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.onb .cta:disabled {
+  background: var(--onb-cta-off);
+  color: var(--onb-cta-off-text);
+  cursor: default;
+}
