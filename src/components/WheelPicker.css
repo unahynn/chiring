@@ -35,10 +35,10 @@
   line-height: 1;
   letter-spacing: -0.44px;
   font-variant-numeric: tabular-nums;
-  color: #7f7f7f;
+  color: var(--wheel-dim, #7f7f7f);
   transition: color 0.12s;
 }
 
 .wheel__item.is-selected {
-  color: #fff;
+  color: var(--wheel-on, #fff);
 }

@@ -21,13 +21,15 @@ export const ELEMENT_META: Record<
     soft: string
     /** 아주 연한 색 (상세 시트 소제목 형광펜) */
     tint: string
+    /** 흰 배경 위 글자색 (밝은 화면의 '불(火)의 기운') */
+    ink: string
   }
 > = {
-  wood: { ko: '나무', hanja: '木', en: 'Wood', strong: '#5effc7', soft: '#8fffd9', tint: '#c4ffeb' },
-  fire: { ko: '불', hanja: '火', en: 'Fire', strong: '#ff39c7', soft: '#ffa1f7', tint: '#ffc7fa' },
-  earth: { ko: '흙', hanja: '土', en: 'Earth', strong: '#ff5500', soft: '#ffaa80', tint: '#ffd3bd' },
-  metal: { ko: '금', hanja: '金', en: 'Metal', strong: '#c7f957', soft: '#dcfc8f', tint: '#ecfdc2' },
-  water: { ko: '물', hanja: '水', en: 'Water', strong: '#13e2ff', soft: '#8ef0ff', tint: '#c2f7ff' },
+  wood: { ko: '나무', hanja: '木', en: 'Wood', strong: '#5effc7', soft: '#8fffd9', tint: '#c4ffeb', ink: '#00b884' },
+  fire: { ko: '불', hanja: '火', en: 'Fire', strong: '#ff39c7', soft: '#ffa1f7', tint: '#ffc7fa', ink: '#ff39c7' },
+  earth: { ko: '흙', hanja: '土', en: 'Earth', strong: '#ff5500', soft: '#ffaa80', tint: '#ffd3bd', ink: '#ff5500' },
+  metal: { ko: '금', hanja: '金', en: 'Metal', strong: '#c7f957', soft: '#dcfc8f', tint: '#ecfdc2', ink: '#6fa800' },
+  water: { ko: '물', hanja: '水', en: 'Water', strong: '#13e2ff', soft: '#8ef0ff', tint: '#c2f7ff', ink: '#00b4d8' },
 }
 
 /** '불(火)' */

@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
 import StatusBar from '../components/StatusBar'
+import SettingsSheet from '../components/SettingsSheet'
 import BottomSheet from '../components/BottomSheet'
 import WheelPicker from '../components/WheelPicker'
-import { CameraIcon, CloseIcon, PencilIcon } from '../components/icons'
+import { CameraIcon, CloseIcon, PencilIcon, SettingsIcon } from '../components/icons'
 import { shrinkPhoto, type Profile } from '../data/profile'
 import { toSolar } from '../data/saju'
 import './SajuSetup.css'
@@ -11,6 +12,8 @@ type Props = {
   /** 전에 입력해 둔 값 (리포트에서 뒤로 왔을 때) */
   initial?: Profile
   onSubmit: (profile: Profile) => Promise<void> | void
+  /** 설정 → 입력한 정보 모두 지우기 */
+  onReset: () => void
 }
 
 const digitsOf = (s: string) => s.replace(/\D/g, '').slice(0, 8)
@@ -57,7 +60,8 @@ const HOURS = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: Strin
 const MINUTES = Array.from({ length: 60 }, (_, i) => ({ value: i, label: String(i).padStart(2, '0') }))
 
 /** 온보딩 1단계: 사진·이름·생년월일·태어난 시간·성별 (피그마 '사주 정보 입력') */
-export default function SajuSetup({ initial, onSubmit }: Props) {
+export default function SajuSetup({ initial, onSubmit, onReset }: Props) {
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [photo, setPhoto] = useState<string | null>(initial?.photo ?? null)
   const [name, setName] = useState(initial?.name ?? '')
   const [editingName, setEditingName] = useState(!initial?.name)
@@ -108,9 +112,12 @@ export default function SajuSetup({ initial, onSubmit }: Props) {
 
   return (
     <div className="setup">
-      <StatusBar />
+      <StatusBar tone="dark" />
       <header className="setup__header">
         <h1>사주 설정</h1>
+        <button className="setup__gear" onClick={() => setSettingsOpen(true)} aria-label="설정">
+          <SettingsIcon />
+        </button>
       </header>
 
       <div className="setup__scroll">
@@ -218,7 +225,7 @@ export default function SajuSetup({ initial, onSubmit }: Props) {
       <BottomSheet
         open={timeOpen}
         onClose={() => setTimeOpen(false)}
-        tone="dark"
+        tone="light"
         label="태어난 시간"
         className="time-sheet"
         header={
@@ -249,6 +256,11 @@ export default function SajuSetup({ initial, onSubmit }: Props) {
           <div className="home-indicator" />
         </div>
       </BottomSheet>
+      <SettingsSheet
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        items={[{ label: '입력한 정보 모두 지우기', onClick: onReset, danger: true }]}
+      />
     </div>
   )
 }

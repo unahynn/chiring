@@ -1,0 +1,58 @@
+.settings-sheet {
+  box-shadow: none;
+}
+
+.settings-sheet__head {
+  position: relative;
+  height: 96px;
+  padding: 36px 40px 0;
+}
+
+.settings-sheet__head h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+}
+
+.settings-sheet__close {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #dddcdd;
+  color: #8a8a8a;
+}
+
+.settings-sheet__list {
+  list-style: none;
+  padding: 0 20px;
+}
+
+.settings-sheet__list button {
+  width: 100%;
+  height: 58px;
+  padding: 0 20px;
+  border-radius: 18px;
+  text-align: left;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.34px;
+  color: #121212;
+}
+
+.settings-sheet__list button:active {
+  background: #f2f2f2;
+}
+
+.settings-sheet__list button.is-danger {
+  color: #ff3b5c;
+}
+
+.settings-sheet__bottom {
+  position: relative;
+  height: 48px;
+}

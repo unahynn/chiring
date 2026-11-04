@@ -46,6 +46,15 @@ export function saveMe(me: Me) {
   }
 }
 
+/** 저장된 내 정보를 모두 지워요 (설정 → 입력한 정보 모두 지우기) */
+export function clearMe() {
+  try {
+    localStorage.removeItem(KEY)
+  } catch {
+    /* 지울 수 없어도 화면은 처음 상태로 돌아가요 */
+  }
+}
+
 /** 갤러리에서 고른 사진을 동그란 프로필용으로 작게 (긴 변 360px, JPEG) */
 export function shrinkPhoto(file: File, size = 360): Promise<string> {
   return new Promise((resolve, reject) => {
