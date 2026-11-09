@@ -328,9 +328,9 @@ export function buildReport(saju: Saju): Report {
         color: '#ff39c7',
         tags: [`${ELEMENT_META[strongest].ko} 기운 최다`, min === 0 ? `${ELEMENT_META[weakest].ko} 기운 0` : `${ELEMENT_META[weakest].ko} 기운 부족`],
         blocks: [
-          { heading: `${elementLabel(strongest)} 기운이\n가장 많아요`, body: BY_ELEMENT[strongest].strong },
+          { heading: `${ELEMENT_META[strongest].ko} 기운이\n가장 많아요`, body: BY_ELEMENT[strongest].strong },
           {
-            heading: min === 0 ? `${elementLabel(weakest)} 기운은\n비어 있어요` : `${elementLabel(weakest)} 기운이\n조금 부족해요`,
+            heading: min === 0 ? `${ELEMENT_META[weakest].ko} 기운은\n비어 있어요` : `${ELEMENT_META[weakest].ko} 기운이\n조금 부족해요`,
             body: BY_ELEMENT[weakest].lacking,
           },
         ],
@@ -354,7 +354,7 @@ export function buildReport(saju: Saju): Report {
         tags: [`${ELEMENT_META[core].ko} 기운 쓰기`, `${ELEMENT_META[needed].ko} 기운 채우기`],
         blocks: [
           { heading: BY_ELEMENT[core].useHeading, body: BY_ELEMENT[core].use },
-          { heading: `${elementLabel(needed)} 기운을\n채워 보세요`, body: BY_ELEMENT[needed].fill },
+          { heading: `${ELEMENT_META[needed].ko} 기운을\n채워 보세요`, body: BY_ELEMENT[needed].fill },
         ],
       },
       {
@@ -377,7 +377,7 @@ export function buildReport(saju: Saju): Report {
         blocks: [
           { heading: BY_ELEMENT[core].friendHeading, body: BY_ELEMENT[core].friend },
           {
-            heading: `${elementLabel(needed)} 기운 친구와\n찰떡이에요`,
+            heading: `${ELEMENT_META[needed].ko} 기운 친구와\n찰떡이에요`,
             body: `내 사주에서 아쉬운 ${elementLabel(needed)} 기운이 강한 친구는 **나에게 없는 걸 자연스럽게 채워 주는** 사람이에요. 함께 있으면 마음이 편하고 일도 술술 풀려요.\n${BY_ELEMENT[needed].asFriend}\n기운이 떨어진 날엔 이 친구에게 먼저 연락해 보세요. 치링에서 서로 기운을 주고받다 보면 둘 다 한층 단단해질 거예요.`,
           },
         ],
@@ -390,11 +390,11 @@ export function buildReport(saju: Saju): Report {
         tags: [`${L.colorName}`, `${L.direction}`],
         blocks: [
           {
-            heading: `${elementLabel(needed)} 기운을\n채우면 풀려요`,
+            heading: `${ELEMENT_META[needed].ko} 기운을\n채우면 풀려요`,
             body: `내 사주엔 ${ELEMENT_META[needed].ko} 기운이 ${saju.counts[needed] === 0 ? '하나도 없어서' : '적은 편이라'}, 행운 포인트를 전부 **${ELEMENT_META[needed].ko} 쪽**으로 맞췄어요.\n행운 색은 **${L.colorName}**, 행운 숫자는 **${L.number.replace(' · ', ', ')}**, 행운 방향은 **${L.direction}**이에요. 하루 중에는 **${BY_ELEMENT[needed].luckyWhen}**이 가장 잘 맞아요.\n이걸 다 챙길 필요는 없어요. 옷이나 소품에 ${L.colorName} 하나를 더하거나, 중요한 일을 ${BY_ELEMENT[needed].luckyWhen}에 잡는 것처럼 하나만 걸려도 충분해요. 작은 행운 포인트가 쌓이면 흐름이 조금씩 ${ELEMENT_META[needed].ko} 쪽으로 기울어요.`,
           },
           {
-            heading: '이렇게\n써먹어요',
+            heading: '이렇게 써먹어요',
             body: `${BY_ELEMENT[needed].luckyUse}\n오늘 바로 해 볼 수 있는 행운 루틴은 ${BY_ELEMENT[needed].routine}예요.\n거창하게 바꾸지 않아도 괜찮아요. 일주일에 한두 번만 챙겨도 기운의 균형이 맞춰지면서, 막혀 있던 일이 **생각보다 수월하게 풀리는** 걸 느낄 수 있을 거예요.`,
           },
         ],
