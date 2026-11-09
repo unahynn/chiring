@@ -561,17 +561,148 @@
   background: #020204;
 }
 
-/* 뒤쪽에서 일렁이는 빛 영상 (441 × 596, 피그마 빛 자리에 맞춰 놓았어요. 영상 가장자리는 배경과 같은 검정이에요) */
+/*
+ * 뒤쪽에서 일렁이는 빛 (피그마 '필요한 기운 확인' 빛 모양)
+ * 둥근 빛 덩어리(테두리 빛 포함) + 밝은 띠 3개. 각 겹은 흐리게 한 번만 그려 두고
+ * 위치·크기만 천천히 바꿔서(transform) 폰에서도 부드러워요.
+ * 좌표는 화면(402 × 874) 기준이에요.
+ */
 .need__glow {
   position: absolute;
-  left: -19px;
-  top: 168px;
-  width: 441px;
-  height: 596px;
-  max-width: none;
-  object-fit: fill;
+  inset: 0;
   pointer-events: none;
   animation: need-glow-in 0.8s ease-out both;
+}
+
+.need__glow i {
+  position: absolute;
+  display: block;
+  will-change: transform;
+}
+
+/* 빛 덩어리: 위는 둥근 돔, 아래는 넓게 둥근 모서리 */
+.glow__body {
+  left: 26px;
+  top: 252px;
+  width: 350px;
+  height: 498px;
+  border-radius: 50% 50% 34% 34% / 46% 46% 21% 21%;
+  /* 테두리 빛: 아래쪽은 밝은 하늘색, 옆은 은은한 청록 (안쪽 그림자라 경계가 부드러워요) */
+  box-shadow:
+    inset 0 -16px 22px -4px rgba(150, 205, 255, 0.95),
+    inset 0 -40px 40px -20px rgba(110, 180, 255, 0.6),
+    inset 0 0 24px 2px rgba(90, 225, 245, 0.45);
+  background: linear-gradient(
+    #001232 0%,
+    #003c86 8%,
+    #0084d8 18%,
+    #00c4fc 26%,
+    #00ddf8 38%,
+    #08e0e6 48%,
+    #00bcd4 60%,
+    #0090c6 69%,
+    #005cba 80%,
+    #0040c4 88%,
+    #0a4ade 100%
+  );
+  filter: blur(10px);
+  transform-origin: 50% 100%;
+  animation: glow-body 7s ease-in-out infinite;
+}
+
+/* 아래쪽 테두리 빛: 옆 아래와 바닥이 밝은 하늘색으로 빛나요 (위쪽은 가려요) */
+.glow__rim {
+  left: 26px;
+  top: 252px;
+  width: 350px;
+  height: 498px;
+  border-radius: 50% 50% 34% 34% / 46% 46% 21% 21%;
+  box-shadow:
+    inset 0 0 16px 6px rgba(140, 205, 255, 0.9),
+    inset 0 -10px 14px 2px rgba(175, 220, 255, 0.9);
+  -webkit-mask-image: linear-gradient(transparent 50%, #000 82%);
+  mask-image: linear-gradient(transparent 50%, #000 82%);
+  filter: blur(5px);
+  transform-origin: 50% 100%;
+  animation: glow-body 7s ease-in-out infinite;
+}
+
+/* 밝은 띠: 서로 다른 박자로 위아래로 흐르고 옆으로 살짝 늘었다 줄었다 */
+.glow__band {
+  border-radius: 50%;
+}
+
+.glow__band--top {
+  left: 40px;
+  top: 350px;
+  width: 322px;
+  height: 62px;
+  background: radial-gradient(closest-side, rgba(170, 240, 255, 1), rgba(150, 236, 255, 0.5) 55%, rgba(150, 236, 255, 0));
+  filter: blur(9px);
+  animation: glow-band-a 5.2s ease-in-out infinite;
+}
+
+.glow__band--mint {
+  left: 26px;
+  top: 464px;
+  width: 350px;
+  height: 74px;
+  background: radial-gradient(closest-side, rgba(175, 255, 242, 1), rgba(130, 248, 236, 0.55) 55%, rgba(120, 245, 235, 0));
+  filter: blur(10px);
+  animation: glow-band-b 6.4s ease-in-out infinite;
+}
+
+.glow__band--deep {
+  left: 80px;
+  top: 618px;
+  width: 242px;
+  height: 100px;
+  background: radial-gradient(closest-side, rgba(0, 48, 190, 0.85), rgba(0, 48, 190, 0));
+  filter: blur(14px);
+  animation: glow-band-c 8s ease-in-out infinite;
+}
+
+@keyframes glow-body {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale(1.012, 1.02);
+  }
+}
+
+@keyframes glow-band-a {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translateY(14px) scaleX(1.08);
+  }
+}
+
+@keyframes glow-band-b {
+  0%,
+  100% {
+    transform: none;
+  }
+  35% {
+    transform: translateY(-12px) scaleX(0.94);
+  }
+  70% {
+    transform: translateY(8px) scaleX(1.04);
+  }
+}
+
+@keyframes glow-band-c {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translateY(-16px) scale(1.1, 0.9);
+  }
 }
 
 @keyframes need-glow-in {
@@ -619,7 +750,7 @@
   white-space: nowrap;
 }
 
-/* 부처: 피그마 102 × 165 자리에서 둥실둥실 */
+/* 부처: 피그마 102 × 165 자리에서 위아래로 둥실둥실 */
 .need__buddha {
   position: absolute;
   left: 150px;
@@ -635,16 +766,10 @@
 @keyframes buddha-float {
   0%,
   100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  30% {
-    transform: translateY(-9px) rotate(-1.2deg);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-11px) rotate(0deg);
-  }
-  70% {
-    transform: translateY(-9px) rotate(1.2deg);
+    transform: translateY(-10px);
   }
 }
 
@@ -1114,6 +1239,7 @@
 @media (prefers-reduced-motion: reduce) {
   .compose__card::before,
   .need__glow,
+  .need__glow i,
   .need__buddha,
   .loading__fallback,
   .gift__card,
