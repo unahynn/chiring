@@ -208,9 +208,6 @@ const GIFT_BG: Record<EnergyType, { hi: string; mid: string; lo: string }> = {
   earth: { hi: '#ff7a2c', mid: '#88331f', lo: '#311b16' },
 }
 
-/** 선물 완료 카드 자리 (화면 기준 px) */
-const GIFT_CARD = { x: 56, y: 273.5, w: 288, h: 364 }
-
 /** 필요한 기운 확인 빛: 물 기운 그림을 기운 색 쪽으로 돌려 써요 */
 const GLOW_HUE: Record<EnergyType, number> = { water: 0, fire: 125, wood: -40, metal: -115, earth: 170 }
 
@@ -613,39 +610,25 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
       const k = el.offsetWidth / r.width || 1
       return { x: (clientX - r.left) * k, y: (clientY - r.top) * k, k }
     }
-    /**
-     * 빛은 카드 뒤에서 번져요 (카드 그림은 그대로 선명하게).
-     * 손가락 쪽 카드 테두리로 빛이 새어 나오도록, 카드 가운데 → 손가락 방향으로 테두리 위에 빛을 찍어요.
-     */
-    const leak = (x: number, y: number, dx: number, dy: number, strength: number) => {
-      const c = GIFT_CARD
-      const cx = c.x + c.w / 2
-      const cy = c.y + c.h / 2
-      let vx = x - cx
-      let vy = y - cy
-      if (Math.hypot(vx, vy) < 1) vx = 1
-      // 가운데에서 손가락 방향으로 쭉 가서 테두리에 닿는 자리
-      const t = Math.min(c.w / 2 / Math.abs(vx || 1e-6), c.h / 2 / Math.abs(vy || 1e-6))
-      vx *= t
-      vy *= t
-      glowRef.current?.splat(cx + vx, cy + vy, dx, dy, strength)
-    }
+    /** 손가락 자리에 은은한 빛 (카드 뒤라서 카드 그림은 가리지 않아요) */
+    const glow = (x: number, y: number, dx: number, dy: number) =>
+      glowRef.current?.splat(x, y, dx, dy, 0.1 + rubAcc.current * 0.08)
     const onRubDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (rub === 'done') return
-      setRub('rub')
+      // 안내 화면에선 한 번 누르면 안내만 닫혀요
+      if (rub !== 'rub') return
       e.currentTarget.setPointerCapture(e.pointerId)
       rubLast.current = { x: e.clientX, y: e.clientY }
       const p = local(e.clientX, e.clientY)
-      leak(p.x, p.y, 0, 0, 0.3 + rubAcc.current * 0.3)
+      glow(p.x, p.y, 0, 0)
       hapticTick()
     }
     const onRubMove = (e: ReactPointerEvent<HTMLDivElement>) => {
       const last = rubLast.current
-      if (!last || rub === 'done') return
+      if (!last || rub !== 'rub') return
       const d = Math.hypot(e.clientX - last.x, e.clientY - last.y)
       const p = local(e.clientX, e.clientY)
       // 문지를수록(진행도) 빛이 진해져요
-      leak(p.x, p.y, (e.clientX - last.x) * p.k, (e.clientY - last.y) * p.k, 0.3 + rubAcc.current * 0.45)
+      glow(p.x, p.y, (e.clientX - last.x) * p.k, (e.clientY - last.y) * p.k)
       // 문지르는 동안 톡톡 (일정 거리마다)
       hapticAcc.current += d
       if (hapticAcc.current > 70) {
@@ -658,8 +641,7 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
       setRubProgress(next)
       if (next >= 1) {
         rubLast.current = null
-        // 다 빌었으면 카드 가운데서 빛이 터지고 참이 나와요
-        glowRef.current?.burst(200, 455)
+        // 다 빌었으면 카드가 스르르 참으로 바뀌어요
         hapticSuccess()
         setRub('done')
       }
@@ -668,7 +650,15 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
       rubLast.current = null
     }
     return (
-      <div ref={giftedRef} className={`freq gifted is-${rub}`} style={
+      // 화면 어디든 문지를 수 있어요
+      <div
+        ref={giftedRef}
+        className={`freq gifted is-${rub}`}
+        onPointerDown={onRubDown}
+        onPointerMove={onRubMove}
+        onPointerUp={onRubUp}
+        onPointerCancel={onRubUp}
+        style={
           {
             '--wish': wishColor,
             '--g-hi': GIFT_BG[energy].hi,
@@ -678,8 +668,8 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
         }
       >
         <div className="gifted__glow" aria-hidden />
-        {/* 문지르면 카드 뒤에서 기운 색 빛이 새어 나와요 */}
-        <WishGlow ref={glowRef} color={wishColor} size={60} />
+        {/* 문지른 자리에 기운 색 빛이 은은하게 (카드 뒤) */}
+        <WishGlow ref={glowRef} color={wishColor} size={34} trail={1.4} />
         <StatusBar />
         <h1 className="gifted__title">
           {isMe ? (
@@ -693,18 +683,15 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
           {isMe ? '기운 충전 완료!' : '기운 선물 완료!'}
         </h1>
 
-        {rub !== 'done' ? (
-          <div
-            className="gifted__card"
-            style={{ ['--rub' as string]: rubProgress }}
-            onPointerDown={onRubDown}
-            onPointerMove={onRubMove}
-            onPointerUp={onRubUp}
-            onPointerCancel={onRubUp}
-          >
-            <img src={card.src} alt={card.label} draggable={false} />
-          </div>
-        ) : (
+        {/* 다 문지르면 카드는 사라지고 참이 나타나요 (단순한 화면 전환) */}
+        <div
+          className={`gifted__card${rub === 'done' ? ' is-out' : ''}`}
+          style={{ ['--rub' as string]: rubProgress }}
+          aria-hidden={rub === 'done'}
+        >
+          <img src={card.src} alt={card.label} draggable={false} />
+        </div>
+        {rub === 'done' && (
           <div className={`gifted__charm gifted__charm--${energy}`}>
             <img src={charmSrc(energy)} alt={`${ENERGY_META[energy].label} 참`} />
           </div>

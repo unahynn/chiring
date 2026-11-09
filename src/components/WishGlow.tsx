@@ -10,8 +10,6 @@ import './WishGlow.css'
 export type WishGlowHandle = {
   /** (x, y)에 빛 한 방울. 좌표는 이 캔버스 기준 CSS px, (dx, dy)는 손가락이 움직인 만큼 */
   splat: (x: number, y: number, dx?: number, dy?: number, strength?: number) => void
-  /** 한가운데서 빛이 사방으로 터져요 (다 문질렀을 때) */
-  burst: (x: number, y: number) => void
 }
 
 type Props = {
@@ -74,8 +72,8 @@ export default function WishGlow({ color, size = 48, trail = 2.6, drift = 0.7, r
       const r = d.r * (1 + 1.0 * t) // 퍼지면서
       const a = d.a * Math.pow(1 - t, 1.6) // 옅어져요
       const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, r)
-      // 가운데는 하얗게 빛나고, 바깥으로 갈수록 기운 색이 번져요
-      g.addColorStop(0, `rgba(255, 255, 255, ${a * 0.9})`)
+      // 가운데는 살짝 밝고, 바깥으로 갈수록 기운 색이 번져요
+      g.addColorStop(0, `rgba(255, 255, 255, ${a * 0.35})`)
       g.addColorStop(0.16, `rgba(${c}, ${a})`)
       g.addColorStop(0.45, `rgba(${c}, ${a * 0.4})`)
       g.addColorStop(1, `rgba(${c}, 0)`)
@@ -111,22 +109,13 @@ export default function WishGlow({ color, size = 48, trail = 2.6, drift = 0.7, r
         add({
           x: x - dx * (1 - k),
           y: y - dy * (1 - k),
-          vx: dx * 4,
-          vy: dy * 4,
+          vx: dx * 2,
+          vy: dy * 2,
           r: size * (0.75 + Math.random() * 0.5),
           a: strength / Math.sqrt(steps),
           life: trail * (0.8 + Math.random() * 0.4),
         })
       }
-      wake()
-    },
-    burst(x, y) {
-      for (let i = 0; i < 36; i++) {
-        const ang = (i / 36) * Math.PI * 2 + Math.random() * 0.3
-        const sp = 160 + Math.random() * 220
-        add({ x, y, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, r: size * (1 + Math.random()), a: 0.35, life: trail * 1.3 })
-      }
-      add({ x, y, vx: 0, vy: 0, r: size * 4, a: 0.7, life: trail * 1.2 })
       wake()
     },
   }))
