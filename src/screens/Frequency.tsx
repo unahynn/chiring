@@ -702,8 +702,8 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
         {rub === 'guide' && <img className="gifted__hand" src={v2('hand-rub')} alt="" />}
         {rub === 'guide' && <p className="gifted__hint">마음을 담아 카드를 문질러주세요</p>}
         {/* 문지르는 동안: 잘되길 비는 마음이 차올라요 */}
-        {rub === 'rub' && (
-          <div className="gifted__wish" aria-live="polite">
+        {rub !== 'guide' && (
+          <div className={`gifted__wish${rub === 'done' ? ' is-out' : ''}`} aria-live="polite">
             <p>{isMe ? '나에게 좋은 기운을 모으는 중' : `${target.name}님이 잘되길 비는 중`}</p>
             <span className="gifted__wish-bar">
               <i style={{ width: `${Math.round(rubProgress * 100)}%` }} />

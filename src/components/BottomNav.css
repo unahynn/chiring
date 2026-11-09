@@ -11,10 +11,33 @@
 }
 
 .bottom-nav__list {
+  position: relative;
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  padding: 12px 28px 0;
+  height: 94px;
+}
+
+/* 피그마 탭 가운데 자리 (402 기준 x = 58 · 150.5 · 246 · 341, 화면 폭에 맞춰 비율로) */
+.bottom-nav__list > li {
+  position: absolute;
+  top: 12px;
+  width: 84px;
+  translate: -50% 0;
+}
+
+.bottom-nav__list > li:nth-child(1) {
+  left: 14.43%; /* 58px / 402 */
+}
+
+.bottom-nav__list > li:nth-child(2) {
+  left: 37.44%; /* 150.5px */
+}
+
+.bottom-nav__list > li:nth-child(3) {
+  left: 61.19%; /* 246px */
+}
+
+.bottom-nav__list > li:nth-child(4) {
+  left: 84.83%; /* 341px */
 }
 
 .bottom-nav__item {
@@ -43,4 +66,9 @@
   border-radius: 100px;
   background: #fff;
   transform: translateX(-50%);
+}
+
+/* 기운 충전 탭은 피그마처럼 회색 */
+.bottom-nav--frequency .home-indicator {
+  background: #6d6d6d;
 }

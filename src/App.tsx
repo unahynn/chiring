@@ -167,7 +167,7 @@ export default function App() {
     <div className="phone">
       {tab === 'friends' && <FriendsRoom onOpenMoment={(id) => openStory(id)} onOpenRoom={setChatRoom} />}
       {tab === 'home' && <ComingSoon label="홈" />}
-      {tab === 'myluck' && <ComingSoon label="행운 아카이브" />}
+      {tab === 'myluck' && <ComingSoon label="아카이브" />}
       {tab === 'frequency' && <Frequency step={freqStep} onStepChange={setFreqStep} todayNeed={me ? neededElement(me.saju) : undefined} />}
       {!(tab === 'frequency' && freqStep !== 'home') && (
         <BottomNav
