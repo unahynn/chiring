@@ -26,11 +26,17 @@ type Props = {
 
 type Drop = { x: number; y: number; vx: number; vy: number; r: number; a: number; age: number; life: number; seed: number }
 
-const MAX_DROPS = 260
+const MAX_DROPS = 420
 
-const rgb = (hex: string) => {
+const rgbOf = (hex: string) => {
   const n = parseInt(hex.replace('#', ''), 16)
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255].join(', ')
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+/** 기운 색 + 가운데용 밝은 색(기운 색에 하양을 섞은 색). 회색이 끼지 않게 하양을 따로 겹치지 않아요 */
+const paletteOf = (hex: string) => {
+  const c = rgbOf(hex)
+  const tint = c.map((v) => Math.round(v + (255 - v) * 0.55))
+  return { c: c.join(', '), tint: tint.join(', ') }
 }
 
 export default function WishGlow({ color, size = 48, trail = 2.6, drift = 0.7, ref }: Props) {
@@ -38,9 +44,9 @@ export default function WishGlow({ color, size = 48, trail = 2.6, drift = 0.7, r
   const drops = useRef<Drop[]>([])
   const raf = useRef<number | null>(null)
   const last = useRef<number | null>(null)
-  const colorRef = useRef(rgb(color))
+  const colorRef = useRef(paletteOf(color))
   useEffect(() => {
-    colorRef.current = rgb(color)
+    colorRef.current = paletteOf(color)
   }, [color])
 
   // 그리기: 빛 방울이 남아 있는 동안만 돌아요
@@ -57,7 +63,7 @@ export default function WishGlow({ color, size = 48, trail = 2.6, drift = 0.7, r
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight)
     ctx.globalCompositeOperation = 'lighter'
-    const c = colorRef.current
+    const { c, tint } = colorRef.current
     const slow = Math.exp(-dt / drift)
     const alive: Drop[] = []
     for (const d of drops.current) {
@@ -69,13 +75,15 @@ export default function WishGlow({ color, size = 48, trail = 2.6, drift = 0.7, r
       d.vy = d.vy * slow - 10 * dt + Math.cos(d.age * 1.7 + d.seed) * 6 * dt
       d.x += d.vx * dt
       d.y += d.vy * dt
-      const r = d.r * (1 + 1.0 * t) // 퍼지면서
-      const a = d.a * Math.pow(1 - t, 1.6) // 옅어져요
+      const r = d.r * (1 + 0.8 * t) // 퍼지면서
+      const a = d.a * Math.pow(1 - t, 1.4) // 옅어져요
       const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, r)
-      // 가운데는 살짝 밝고, 바깥으로 갈수록 기운 색이 번져요
-      g.addColorStop(0, `rgba(255, 255, 255, ${a * 0.35})`)
-      g.addColorStop(0.16, `rgba(${c}, ${a})`)
-      g.addColorStop(0.45, `rgba(${c}, ${a * 0.4})`)
+      // 가우스 모양으로 가장자리 없이 풀려요. 가운데는 기운 색에 하양을 섞은 밝은 색
+      g.addColorStop(0, `rgba(${tint}, ${a})`)
+      g.addColorStop(0.2, `rgba(${c}, ${a * 0.78})`)
+      g.addColorStop(0.4, `rgba(${c}, ${a * 0.42})`)
+      g.addColorStop(0.6, `rgba(${c}, ${a * 0.16})`)
+      g.addColorStop(0.8, `rgba(${c}, ${a * 0.04})`)
       g.addColorStop(1, `rgba(${c}, 0)`)
       ctx.fillStyle = g
       ctx.fillRect(d.x - r, d.y - r, r * 2, r * 2)
@@ -103,7 +111,7 @@ export default function WishGlow({ color, size = 48, trail = 2.6, drift = 0.7, r
     splat(x, y, dx = 0, dy = 0, strength = 0.2) {
       // 빠르게 문지르면 사이사이를 메워서 끊기지 않는 붓자국처럼
       const dist = Math.hypot(dx, dy)
-      const steps = Math.max(1, Math.min(6, Math.round(dist / 12)))
+      const steps = Math.max(1, Math.min(10, Math.round(dist / 8)))
       for (let i = 0; i < steps; i++) {
         const k = (i + 1) / steps
         add({
@@ -111,7 +119,7 @@ export default function WishGlow({ color, size = 48, trail = 2.6, drift = 0.7, r
           y: y - dy * (1 - k),
           vx: dx * 2,
           vy: dy * 2,
-          r: size * (0.75 + Math.random() * 0.5),
+          r: size * (0.85 + Math.random() * 0.3),
           a: strength / Math.sqrt(steps),
           life: trail * (0.8 + Math.random() * 0.4),
         })

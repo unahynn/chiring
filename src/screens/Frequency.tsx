@@ -612,7 +612,7 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
     }
     /** 손가락 자리에 은은한 빛 (카드 뒤라서 카드 그림은 가리지 않아요) */
     const glow = (x: number, y: number, dx: number, dy: number) =>
-      glowRef.current?.splat(x, y, dx, dy, 0.1 + rubAcc.current * 0.08)
+      glowRef.current?.splat(x, y, dx, dy, 0.13 + rubAcc.current * 0.1)
     const onRubDown = (e: ReactPointerEvent<HTMLDivElement>) => {
       // 안내 화면에선 한 번 누르면 안내만 닫혀요
       if (rub !== 'rub') return
@@ -669,7 +669,7 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
       >
         <div className="gifted__glow" aria-hidden />
         {/* 문지른 자리에 기운 색 빛이 은은하게 (카드 뒤) */}
-        <WishGlow ref={glowRef} color={wishColor} size={34} trail={1.4} />
+        <WishGlow ref={glowRef} color={wishColor} size={78} trail={1.6} />
         <StatusBar />
         <h1 className="gifted__title">
           {isMe ? (

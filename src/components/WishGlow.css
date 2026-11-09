@@ -4,4 +4,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  /* 빛 방울 경계가 안 보이게 한 번 더 풀어주고, 배경을 밝히듯 더해요 (회색으로 덮이지 않게) */
+  filter: blur(10px);
+  mix-blend-mode: plus-lighter;
 }
