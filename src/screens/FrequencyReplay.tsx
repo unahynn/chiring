@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import StatusBar from '../components/StatusBar'
 import { BackButton, CloseButton } from '../components/RoundButton'
-import { signalCards, type SignalCard } from '../data/cards'
+import { replayCards, type SignalCard } from '../data/cards'
 import { ENERGY_META, type EnergyType } from '../data/energy'
 import { REPLAY_GIFTS } from '../data/replay'
 import { hapticTick } from '../lib/haptic'
@@ -60,7 +60,7 @@ export function ReplayList({
       </div>
 
       <ul className="replay__grid" key={energy}>
-        {signalCards(energy).map((c, i) => (
+        {replayCards(energy).map((c, i) => (
           <li key={c.id} style={{ animationDelay: `${i * 40}ms` }}>
             <button className="replay__item" onClick={() => onPick(c)} aria-label={c.label}>
               <img src={c.src} alt="" draggable={false} />

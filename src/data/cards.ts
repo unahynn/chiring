@@ -17,3 +17,23 @@ export const signalCards = (energy: EnergyType) =>
   CARD_LABELS[energy].map((label, i) => ({ id: `${energy}-${i + 1}`, src: cardSrc(energy, i + 1), label }))
 
 export type SignalCard = ReturnType<typeof signalCards>[number]
+
+/**
+ * '기운 주파수 다시 듣기' 목록 카드 (피그마) — 따로 정한 기운만, 나머지는 위 3장 그대로
+ * 그림 파일(card-{기운}-{번호}.webp)이 없는 카드는 빼고 보여줘요.
+ */
+const REPLAY_SETS: Partial<Record<EnergyType, [number, string][]>> = {
+  water: [
+    [2, '연락 말고 그냥 자 주파수'],
+    [3, '새로운 인연이 들어오는 기운'],
+    [4, 'Chill Mode ON'],
+    [5, '마음을 식히는 주파수'],
+    [6, '스트레스 싹 씻어내는 기운'],
+  ],
+}
+
+export const replayCards = (energy: EnergyType): SignalCard[] => {
+  const set = REPLAY_SETS[energy]
+  if (!set) return signalCards(energy)
+  return set.map(([n, label]) => ({ id: `${energy}-${n}`, src: cardSrc(energy, n), label })).filter((c) => c.src)
+}
