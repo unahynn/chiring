@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import BottomNav, { type TabKey } from './components/BottomNav'
 import FriendsRoom from './screens/FriendsRoom'
 import Story from './screens/Story'
@@ -14,6 +14,26 @@ import { neededElement } from './data/saju'
 /** 주소 끝에 ?onboarding 을 붙이면 저장된 정보가 있어도 온보딩부터 다시 볼 수 있어요 (테스트용) */
 const FORCE_ONBOARDING = new URLSearchParams(window.location.search).has('onboarding')
 
+/**
+ * 팀 프로토타입(naver-1020-luck)에 붙이는 빌드 (`npm run build:team`)
+ * - 온보딩은 팀 프로토타입에 있으니 건너뛰어요 (?onboarding 이면 보여요)
+ * - 홈·친구방 탭, 스토리 뒤로가기 → 팀 프로토타입 화면으로
+ */
+const TEAM = import.meta.env.MODE === 'team'
+/** 팀 프로토타입 안(iframe)에 띄워져 있는지 */
+const EMBEDDED = window.parent !== window
+
+/** 주소 끝 #frequency · #friends · #myluck 로 시작 탭, #moment-<친구 id> 로 그 친구 스토리부터 */
+const START_HASH = window.location.hash.slice(1)
+const START_TAB: TabKey = (['friends', 'frequency', 'myluck'] as const).find((t) => t === START_HASH) ?? 'friends'
+const START_STORY = START_HASH.startsWith('moment-') ? START_HASH.slice(7) : null
+
+/** 팀 프로토타입 화면으로 보내기: iframe 안이면 신호(postMessage), 따로 열었으면 팀 프로토타입 주소로 */
+function toTeam(where: 'home' | 'friends') {
+  if (EMBEDDED) window.parent.postMessage(`chiring:${where}`, '*')
+  else window.location.href = `../index.html#${where}`
+}
+
 function ComingSoon({ label }: { label: string }) {
   return (
     <div style={{ minHeight: 700, display: 'grid', placeItems: 'center', color: '#6e767c' }}>
@@ -26,18 +46,22 @@ export default function App() {
   /** 내 프로필 + 사주. 처음 실행이면 null */
   const [me, setMe] = useState<Me | null>(loadMe)
   /** 온보딩 단계: 사주 설정 → 캐해 리포트. 끝나면 null (홈) */
-  const [onboarding, setOnboarding] = useState<'setup' | 'report' | null>(() => (FORCE_ONBOARDING || !me?.done ? 'setup' : null))
+  const [onboarding, setOnboarding] = useState<'setup' | 'report' | null>(() =>
+    FORCE_ONBOARDING || (!TEAM && !me?.done) ? 'setup' : null,
+  )
   /** 설정 (화면 모드 · 알림 · 사주 계산 기준) */
   const [settings, setSettings] = useState<Settings>(loadSettings)
   const theme = useResolvedTheme(settings.theme)
-  const [tab, setTab] = useState<TabKey>('friends')
+  const [tab, setTab] = useState<TabKey>(START_TAB)
   /** 주파수 탭 안에서 몇 번째 화면인지. 첫 화면이 아니면 탭바를 숨겨요. */
   const [freqStep, setFreqStep] = useState<FrequencyStep>('home')
   /** 열려 있는 스토리(Lucky Moments 카드). 열려 있으면 탭바 없이 스토리 화면만 보여요. */
-  const [storyId, setStoryId] = useState<string | null>(null)
+  const [storyId, setStoryId] = useState<string | null>(START_STORY)
   /** 열려 있는 채팅방 (Lucky Talk 가운데 카드를 누르면 열려요) */
   const [chatRoom, setChatRoom] = useState<string | null>(null)
   const [enterFrom, setEnterFrom] = useState<'left' | 'right' | undefined>()
+  /** 주파수 화면을 처음 상태로 되돌릴 때 바꿔요 (다시 그려져요) */
+  const [freqKey, setFreqKey] = useState(0)
   const storyIndex = MOMENTS.findIndex((m) => m.id === storyId)
   const story = MOMENTS[storyIndex]
 
@@ -45,6 +69,30 @@ export default function App() {
     setEnterFrom(from)
     setStoryId(id)
   }
+
+  // 팀 프로토타입이 보내는 신호
+  // - chiring:reset → 주파수 첫 화면으로 (다음에 열 때 처음부터)
+  // - chiring:moment:<id> → 그 친구 스토리 열기
+  useEffect(() => {
+    const onMessage = (e: MessageEvent) => {
+      const data = e.data
+      if (typeof data !== 'string') return
+      if (data === 'chiring:reset') {
+        setChatRoom(null)
+        setStoryId(null)
+        setFreqStep('home')
+        setFreqKey((k) => k + 1)
+        setTab('frequency')
+      } else if (data.startsWith('chiring:moment:')) {
+        setChatRoom(null)
+        setEnterFrom(undefined)
+        setTab('friends')
+        setStoryId(data.slice('chiring:moment:'.length))
+      }
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [])
 
   /** 프로필 → 사주 계산 (만세력 계산 라이브러리는 커서 이때만 불러와요) */
   const calcSaju = async (profile: Profile, s: Settings) => {
@@ -154,7 +202,7 @@ export default function App() {
           key={story.id}
           moment={story}
           enterFrom={enterFrom}
-          onBack={() => openStory(null)}
+          onBack={() => (TEAM ? toTeam('friends') : openStory(null))}
           // 왼쪽으로 넘기면 다음 친구, 오른쪽으로 넘기면 이전 친구
           onNext={storyIndex < MOMENTS.length - 1 ? () => openStory(MOMENTS[storyIndex + 1].id, 'right') : undefined}
           onPrev={storyIndex > 0 ? () => openStory(MOMENTS[storyIndex - 1].id, 'left') : undefined}
@@ -169,6 +217,7 @@ export default function App() {
       {tab === 'home' && <ComingSoon label="홈" />}
       {tab === 'myluck' && <ComingSoon label="아카이브" />}
       {tab === 'frequency' && <Frequency
+          key={freqKey}
           step={freqStep}
           onStepChange={setFreqStep}
           todayNeed={me ? neededElement(me.saju) : undefined}
@@ -178,6 +227,11 @@ export default function App() {
         <BottomNav
           active={tab}
           onChange={(t) => {
+            // 팀 프로토타입에 붙어 있으면 홈·친구방은 팀 프로토타입 화면이에요
+            if (TEAM && (t === 'home' || t === 'friends')) {
+              toTeam(t)
+              return
+            }
             setTab(t)
             setFreqStep('home')
           }}

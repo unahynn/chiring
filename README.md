@@ -74,3 +74,7 @@ src/
   lib/          피그마 셰이더 런타임 (기운 생성중 빛)
   assets/       피그마에서 가져온 이미지
 ```
+
+## 팀 프로토타입(naver-1020-luck)에 붙이기
+`npm run build:team` → `dist-team/index.html` (이미지·폰트까지 한 파일). 팀 저장소의 `chiring/index.html` 에 덮어써요.
+팀 빌드에서는 온보딩을 건너뛰고, 하단 내비 홈·친구방과 스토리 뒤로가기가 팀 프로토타입 화면으로 가요 (`src/App.tsx` 의 `TEAM`).

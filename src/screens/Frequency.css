@@ -507,6 +507,9 @@
 }
 
 .keywords .chip {
+  /* 사파리에서 칩이 글자보다 좁게 줄어들며 잘리지 않게 */
+  flex: 0 0 auto;
+  min-width: max-content;
   width: auto; /* 온보딩 .chip(72px)과 이름이 같아서 덮어써요 */
   height: 40px;
   padding: 0 18px;
