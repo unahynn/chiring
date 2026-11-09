@@ -130,8 +130,9 @@
 /* ---------- 6개 박스 (177 × 177, 아래에 이름) ---------- */
 .report__grid {
   display: grid;
-  grid-template-columns: repeat(2, 177px);
+  grid-template-columns: repeat(2, minmax(0, 177px));
   justify-content: space-between;
+  column-gap: 8px;
   row-gap: 16px;
   margin-top: 51px;
   padding: 0 20px;
@@ -139,6 +140,7 @@
 
 .report-box {
   position: relative;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -148,11 +150,12 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* 177 × 177 (좁은 화면에선 정사각형 그대로 줄어들어요) */
 .report-box__card {
   position: relative;
   display: block;
-  width: 177px;
-  height: 177px;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: 40px;
   background-size: 100% 100%;
   isolation: isolate; /* 참의 hard-light가 박스 색에만 섞이게 */
@@ -331,313 +334,4 @@
 .detail__body strong {
   font-weight: 500;
   color: #fff;
-}
-
-/* ---------- 나의 오행 막대 ---------- */
-.elements {
-  margin-top: 30px;
-  padding: 20px 18px 18px;
-  border-radius: 24px;
-  background: rgba(0, 0, 0, 0.28);
-}
-
-.elements__me {
-  font-size: 14px;
-  color: #c3c6cb;
-  letter-spacing: -0.28px;
-}
-
-.elements__me strong {
-  margin: 0 2px;
-  font-size: 17px;
-  color: #fff;
-}
-
-.elements__bars {
-  margin-top: 14px;
-  list-style: none;
-  display: grid;
-  gap: 10px;
-}
-
-.elements__bars li {
-  display: grid;
-  grid-template-columns: 70px 1fr 20px;
-  align-items: center;
-  gap: 10px;
-}
-
-.elements__name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #c3c6cb;
-}
-
-.elements__bars li.is-core .elements__name {
-  color: #fff;
-  font-weight: 700;
-}
-
-.elements__track {
-  height: 14px;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.12);
-  overflow: hidden;
-}
-
-.elements__fill {
-  display: block;
-  height: 100%;
-  min-width: 0;
-  border-radius: 7px;
-  animation: bar-grow 0.8s cubic-bezier(0.2, 0.9, 0.3, 1) 0.25s backwards;
-}
-
-@keyframes bar-grow {
-  from {
-    width: 0;
-  }
-}
-
-.elements__count {
-  text-align: right;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.elements__manse {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin: 14px 0 0 auto;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
-  color: #c3c6cb;
-}
-
-.elements__note {
-  margin-top: 12px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* ---------- 행운 포인트 ---------- */
-.lucky {
-  margin-top: 30px;
-  display: grid;
-  gap: 8px;
-}
-
-/* 영문 작은 제목: 박스 제목과 같은 굵고 좁은 글씨 */
-.lucky__eyebrow {
-  display: block;
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-  transform: scaleX(0.8);
-  transform-origin: left;
-  opacity: 0.55;
-}
-
-.lucky__color {
-  position: relative;
-  height: 158px;
-  padding: 22px 24px;
-  border-radius: 36px;
-  color: #000;
-  overflow: hidden;
-}
-
-.lucky__big {
-  position: absolute;
-  left: 22px;
-  bottom: 14px;
-  font-size: 58px;
-  font-weight: 900;
-  line-height: 0.95;
-  letter-spacing: -0.055em;
-  white-space: nowrap;
-  transform: scaleX(0.74);
-  transform-origin: left bottom;
-}
-
-.lucky__ko {
-  position: absolute;
-  top: 22px;
-  right: 24px;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.lucky__row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.lucky__card {
-  height: 140px;
-  padding: 20px 20px 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border-radius: 32px;
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-}
-
-.lucky__num {
-  font-size: 50px;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  white-space: nowrap;
-  transform: scaleX(0.8);
-  transform-origin: left bottom;
-}
-
-.lucky__dir {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.lucky__compass {
-  flex: none;
-  width: 44px;
-  height: 44px;
-}
-
-.lucky__dir strong {
-  display: block;
-  font-size: 26px;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  transform: scaleX(0.8);
-  transform-origin: left;
-}
-
-.lucky__dir small {
-  display: block;
-  margin-top: 4px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.lucky__routine {
-  padding: 20px 22px 22px;
-  border: 2px solid rgba(255, 255, 255, 0.18);
-  border-radius: 32px;
-}
-
-.lucky__routine p {
-  margin-top: 8px;
-  font-size: 17px;
-  line-height: 1.55;
-  letter-spacing: -0.34px;
-  color: #c3c6cb;
-  word-break: keep-all;
-}
-
-.lucky__routine strong {
-  font-weight: 700;
-  color: #fff;
-  background: linear-gradient(transparent 58%, color-mix(in srgb, var(--lucky) 40%, transparent) 58%);
-}
-
-/* ---------- 만세력 ---------- */
-.pillars {
-  margin-top: 30px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.pillars__col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 12px 0;
-  border-radius: 22px;
-}
-
-.pillars__col.is-me {
-  background: rgba(0, 0, 0, 0.28);
-}
-
-.pillars__head {
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.pillars__god {
-  font-size: 12px;
-  color: #c3c6cb;
-}
-
-.pillars__cell {
-  width: 64px;
-  height: 64px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20px;
-  color: #000;
-}
-
-.pillars__cell b {
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.05;
-}
-
-.pillars__cell small {
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.pillars__cell.is-empty {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.pillars__counts {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  margin-top: 22px;
-  list-style: none;
-  font-size: 14px;
-  font-weight: 600;
-  color: #c3c6cb;
-}
-
-.pillars__counts li {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.pillars__counts i {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-}
-
-.pillars__note {
-  margin-top: 22px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.5);
-  word-break: keep-all;
-  text-align: center;
 }

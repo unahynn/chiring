@@ -2,10 +2,10 @@ import { useMemo, useState, type CSSProperties } from 'react'
 import StatusBar from '../components/StatusBar'
 import BottomSheet from '../components/BottomSheet'
 import SettingsSheet from '../components/SettingsSheet'
-import { CaretLeftIcon, CaretRightIcon, CloseIcon, SettingsIcon } from '../components/icons'
+import { CaretLeftIcon, CloseIcon, SettingsIcon } from '../components/icons'
 import type { Me } from '../data/profile'
-import { buildReport, type Lucky, type ReportSection, type SectionKey } from '../data/report'
-import { BRANCHES, ELEMENTS, ELEMENT_META, STEMS, elementLabel, type Pillar } from '../data/saju'
+import { buildReport, type ReportSection, type SectionKey } from '../data/report'
+import { ELEMENT_META } from '../data/saju'
 import type { Settings } from '../data/settings'
 import charmFire from '../assets/report/charm-fire.webp'
 import charmWater from '../assets/report/charm-water.webp'
@@ -28,7 +28,7 @@ type Props = {
   onSettingsChange: (next: Settings) => void
 }
 
-type SheetKey = SectionKey | 'pillars'
+type SheetKey = SectionKey
 
 /** **굵게** 표시를 진한 글씨로 */
 function Rich({ text }: { text: string }) {
@@ -46,6 +46,16 @@ const dotted = (ymd: string) => ymd.replace(/-/g, '.')
 // 타입 이름 글자 이미지 (scripts/render-zen-text.py 로 만들어요)
 const TYPE_IMAGES = import.meta.glob<string>('../assets/report/type-*.png', { eager: true, import: 'default' })
 const typeImage = (name: string) => TYPE_IMAGES[`../assets/report/type-${name.toLowerCase().replace(/ /g, '-')}.png`]
+
+/** 177px 박스 기준 위치를 %로 바꿔서, 박스가 작아져도 참이 같은 자리에 있게 */
+const toPercent = (style: CSSProperties): CSSProperties => {
+  const out: CSSProperties = { ...style }
+  for (const k of ['left', 'top', 'width', 'height'] as const) {
+    const v = style[k]
+    if (typeof v === 'number') out[k] = `${(v / 177) * 100}%`
+  }
+  return out
+}
 
 /** 피그마 그라데이션(radialGradient)을 배경 그림으로 */
 const radial = (transform: string, stops: [string, number][], opacity = 1) =>
@@ -129,7 +139,7 @@ const BOX_LOOKS: Record<SectionKey, { bg: string; inset: string; charm: string; 
 export default function CharReport({ me, onBack, onStart, onReset, theme, settings, onSettingsChange }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const report = useMemo(() => buildReport(me.saju), [me.saju])
-  const { profile, saju } = me
+  const { profile } = me
   const core = ELEMENT_META[report.core]
   const typeImg = typeImage(report.typeName)
   const [active, setActive] = useState<SheetKey | null>(null)
@@ -140,8 +150,7 @@ export default function CharReport({ me, onBack, onStart, onReset, theme, settin
     setActive(key)
   }
   const section = report.sections.find((s) => s.key === shown)
-  // 만세력은 나의 오행에서 열려서 같은 색으로
-  const sheetLook = BOX_LOOKS[shown === 'pillars' ? 'elements' : shown]
+  const sheetLook = BOX_LOOKS[shown]
 
   const chips = [
     `${profile.calendar === 'lunar' ? `음력${profile.leap ? '(윤)' : ''} ` : ''}${dotted(profile.birthDate)}`,
@@ -197,7 +206,7 @@ export default function CharReport({ me, onBack, onStart, onReset, theme, settin
             return (
               <button key={s.key} className={`report-box report-box--${s.key}`} style={{ animationDelay: `${0.05 * i}s` }} onClick={() => open(s.key)}>
                 <span className="report-box__card" style={{ backgroundImage: look.bg, boxShadow: `1.749px 1.749px 23.696px rgba(187, 187, 187, 0.25), ${look.inset}` }}>
-                  <img className={`report-box__charm${look.blend ? ' is-blend' : ''}`} src={look.charm} alt="" draggable={false} style={look.style} />
+                  <img className={`report-box__charm${look.blend ? ' is-blend' : ''}`} src={look.charm} alt="" draggable={false} style={toPercent(look.style)} />
                 </span>
                 <span className="report-box__ko">{s.ko}</span>
               </button>
@@ -229,7 +238,7 @@ export default function CharReport({ me, onBack, onStart, onReset, theme, settin
         open={active !== null}
         onClose={() => setActive(null)}
         tone="dark"
-        label={shown === 'pillars' ? '만세력' : (section?.ko ?? '')}
+        label={section?.ko ?? ''}
         className="detail-sheet"
         header={
           <div className="detail__grab">
@@ -241,28 +250,16 @@ export default function CharReport({ me, onBack, onStart, onReset, theme, settin
       >
         <div className="detail" key={shown}>
           {/* 박스 이름 + 박스 속 참 (피그마 '나의 오행' 상세) */}
-          <h2 className="detail__title">{shown === 'pillars' ? '만세력' : section?.ko}</h2>
+          <h2 className="detail__title">{section?.ko}</h2>
           <img className={`detail__charm${sheetLook.blend ? ' is-blend' : ''}`} src={sheetLook.charm} alt="" draggable={false} />
-          {shown === 'pillars' ? <PillarsDetail me={me} settings={settings} /> : section && <SectionDetail section={section} report={report} saju={saju} onPillars={() => open('pillars')} />}
+          {section && <SectionDetail section={section} />}
         </div>
       </BottomSheet>
     </div>
   )
 }
 
-function SectionDetail({
-  section,
-  report,
-  saju,
-  onPillars,
-}: {
-  section: ReportSection
-  report: ReturnType<typeof buildReport>
-  saju: Me['saju']
-  onPillars: () => void
-}) {
-  const total = ELEMENTS.reduce((n, e) => n + saju.counts[e], 0)
-  const dayStem = STEMS[saju.dayStem]
+function SectionDetail({ section }: { section: ReportSection }) {
   return (
     <>
       <ul className="detail__tags">
@@ -270,37 +267,6 @@ function SectionDetail({
           <li key={t}># {t}</li>
         ))}
       </ul>
-
-      {section.key === 'elements' && (
-        <div className="elements">
-          <p className="elements__me">
-            나를 뜻하는 글자(일간) <strong>{dayStem.hanja}</strong> {dayStem.ko}
-            {STEM_SOUND[dayStem.element]} · {elementLabel(dayStem.element)}
-          </p>
-          <ul className="elements__bars">
-            {ELEMENTS.map((e) => (
-              <li key={e} className={e === report.core ? 'is-core' : undefined}>
-                <span className="elements__name">{elementLabel(e)}</span>
-                <span className="elements__track">
-                  <span
-                    className="elements__fill"
-                    style={{ width: `${(saju.counts[e] / total) * 100}%`, background: ELEMENT_META[e].strong }}
-                  />
-                </span>
-                <span className="elements__count">{saju.counts[e]}</span>
-              </li>
-            ))}
-          </ul>
-          {!saju.hour && <p className="elements__note">태어난 시간을 몰라서 여섯 글자로 봤어요</p>}
-          {/* 만세력은 이제 나의 오행 안에서 열어요 */}
-          <button className="elements__manse" onClick={onPillars}>
-            만세력 보기
-            <CaretRightIcon size={20} />
-          </button>
-        </div>
-      )}
-
-      {section.key === 'lucky' && <LuckyCards lucky={report.lucky} />}
 
       {section.blocks.map((b) => (
         <article key={b.heading} className="detail__block">
@@ -314,117 +280,6 @@ function SectionDetail({
           </div>
         </article>
       ))}
-    </>
-  )
-}
-
-/** 행운 포인트: 행운 색 카드 + 숫자·방향 카드 + 행운 루틴 한 줄 */
-function LuckyCards({ lucky }: { lucky: Lucky }) {
-  return (
-    <div className="lucky" style={{ '--lucky': lucky.color } as CSSProperties}>
-      <div className="lucky__color" style={{ background: lucky.color }}>
-        <span className="lucky__eyebrow">Lucky Color</span>
-        <strong className="lucky__big">{lucky.colorEn}</strong>
-        <span className="lucky__ko">{lucky.colorName}</span>
-      </div>
-      <div className="lucky__row">
-        <div className="lucky__card">
-          <span className="lucky__eyebrow">Lucky No.</span>
-          <strong className="lucky__num" style={{ color: lucky.color }}>
-            {lucky.number}
-          </strong>
-        </div>
-        <div className="lucky__card">
-          <span className="lucky__eyebrow">Direction</span>
-          <span className="lucky__dir">
-            <svg className="lucky__compass" viewBox="0 0 40 40" aria-hidden>
-              <circle cx="20" cy="20" r="18.5" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
-              {lucky.angle === null ? (
-                <circle cx="20" cy="20" r="6" fill={lucky.color} />
-              ) : (
-                <g transform={`rotate(${lucky.angle} 20 20)`}>
-                  <path d="M20 5 25 20H15Z" fill={lucky.color} />
-                  <path d="M20 35 25 20H15Z" fill="rgba(255,255,255,0.3)" />
-                </g>
-              )}
-            </svg>
-            <span>
-              <strong>{lucky.directionEn}</strong>
-              <small>{lucky.direction}</small>
-            </span>
-          </span>
-        </div>
-      </div>
-      <div className="lucky__routine">
-        <span className="lucky__eyebrow">Lucky Routine</span>
-        <Rich text={lucky.routine} />
-      </div>
-    </div>
-  )
-}
-
-const STEM_SOUND: Record<string, string> = { wood: '목', fire: '화', earth: '토', metal: '금', water: '수' }
-
-/** 만세력: 시주·일주·월주·년주 네 기둥 */
-function PillarsDetail({ me, settings }: { me: Me; settings: Settings }) {
-  const { saju, profile } = me
-  const cols: { label: string; p: Pillar | null }[] = [
-    { label: '생시', p: saju.hour },
-    { label: '생일', p: saju.day },
-    { label: '생월', p: saju.month },
-    { label: '생년', p: saju.year },
-  ]
-  const cell = (g: { hanja: string; ko: string; element: keyof typeof ELEMENT_META }) => (
-    <span className="pillars__cell" style={{ background: ELEMENT_META[g.element].strong }}>
-      <b>{g.hanja}</b>
-      <small>
-        {g.ko}
-        {STEM_SOUND[g.element]}
-      </small>
-    </span>
-  )
-  return (
-    <>
-      <ul className="detail__tags">
-        <li># 양력 {dotted(saju.solarDate)}</li>
-        <li># {profile.birthTime ?? '시간 모름'}</li>
-      </ul>
-      <div className="pillars">
-        {cols.map(({ label, p }) => (
-          <div key={label} className={`pillars__col${label === '생일' ? ' is-me' : ''}`}>
-            <span className="pillars__head">{label}</span>
-            {p ? (
-              <>
-                <span className="pillars__god">{p.stemGod}</span>
-                {cell(STEMS[p.stem])}
-                {cell(BRANCHES[p.branch])}
-                <span className="pillars__god">{p.branchGod}</span>
-              </>
-            ) : (
-              <>
-                <span className="pillars__god">&nbsp;</span>
-                <span className="pillars__cell is-empty">?</span>
-                <span className="pillars__cell is-empty">?</span>
-                <span className="pillars__god">&nbsp;</span>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-      <ul className="pillars__counts">
-        {ELEMENTS.map((e) => (
-          <li key={e}>
-            <i style={{ background: ELEMENT_META[e].strong }} />
-            {ELEMENT_META[e].ko} {saju.counts[e]}
-          </li>
-        ))}
-      </ul>
-      <p className="pillars__note">
-        {settings.seoulTime ? '서울 기준으로 태어난 시간에서 30분을 빼서 계산했고, ' : '시간 보정 없이 계산했고, '}
-        {settings.lateRat ? '밤 11시~12시 출생은 일주를 그날로 보는 야자시 기준이에요.' : '밤 11시~12시 출생은 일주를 다음 날로 보는 조자시 기준이에요.'}
-        <br />
-        설정에서 바꿀 수 있어요.
-      </p>
     </>
   )
 }

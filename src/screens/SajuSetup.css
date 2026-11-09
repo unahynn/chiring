@@ -104,10 +104,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
   height: 31px;
   margin-top: 16px;
-  /* 이름 + 연필을 한 덩어리로 가운데 (피그마) */
 }
 
 .setup__name-text,
@@ -132,12 +130,6 @@
 
 .setup__name-input::placeholder {
   color: var(--onb-hint);
-}
-
-.setup__name-edit {
-  width: 18px;
-  height: 18px;
-  color: var(--onb-pencil);
 }
 
 /* ---------- 입력 칸 ---------- */

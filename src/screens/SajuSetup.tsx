@@ -3,7 +3,7 @@ import StatusBar from '../components/StatusBar'
 import SettingsSheet from '../components/SettingsSheet'
 import BottomSheet from '../components/BottomSheet'
 import WheelPicker from '../components/WheelPicker'
-import { CameraIcon, CloseIcon, PencilIcon, SettingsIcon } from '../components/icons'
+import { CameraIcon, CloseIcon, SettingsIcon } from '../components/icons'
 import { shrinkPhoto, type Profile } from '../data/profile'
 import { toSolar } from '../data/saju'
 import type { Settings } from '../data/settings'
@@ -157,13 +157,10 @@ export default function SajuSetup({ initial, onSubmit, onReset, theme, settings,
               onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
             />
           ) : (
-            <button className="setup__name-text" onClick={() => setEditingName(true)}>
+            <button className="setup__name-text" onClick={() => setEditingName(true)} aria-label={`이름 ${name} 고치기`}>
               {name}
             </button>
           )}
-          <button className="setup__name-edit" onClick={() => setEditingName(true)} aria-label="이름 고치기">
-            <PencilIcon />
-          </button>
         </div>
 
         <section className="setup__field">

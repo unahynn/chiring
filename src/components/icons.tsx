@@ -66,14 +66,6 @@ export function CloseIcon({ size = 16 }: IconProps) {
   )
 }
 
-export function PencilIcon({ size = 20 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-      <path d="M14.2 2.6a2.2 2.2 0 0 1 3.1 3.1L8 15l-4.3 1.3a.5.5 0 0 1-.6-.6L4.4 11.4l9.8-8.8Z" />
-    </svg>
-  )
-}
-
 export function CameraIcon({ size = 28 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 28 28" fill="none" aria-hidden>
