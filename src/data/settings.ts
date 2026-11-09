@@ -13,7 +13,7 @@ export type Settings = {
   lateRat: boolean
 }
 
-export const DEFAULT_SETTINGS: Settings = { theme: 'light', notify: true, seoulTime: true, lateRat: true }
+export const DEFAULT_SETTINGS: Settings = { theme: 'dark', notify: true, seoulTime: true, lateRat: true }
 
 const KEY = 'chiring.settings.v1'
 

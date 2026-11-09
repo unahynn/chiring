@@ -31,9 +31,9 @@
   align-items: center;
   justify-content: center;
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.44px;
+  letter-spacing: -0.88px;
   font-variant-numeric: tabular-nums;
   color: var(--wheel-dim, #7f7f7f);
   transition: color 0.12s;
@@ -41,4 +41,5 @@
 
 .wheel__item.is-selected {
   color: var(--wheel-on, #fff);
+  font-weight: 600;
 }

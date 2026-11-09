@@ -23,10 +23,10 @@
 
 .setup__gear {
   position: absolute;
-  right: 20px;
-  top: 12px;
-  width: 28px;
-  height: 28px;
+  left: 358px;
+  top: 15px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
   color: var(--onb-text);
@@ -35,7 +35,13 @@
 .setup__header h1 {
   font-size: 20px;
   font-weight: 600;
-  letter-spacing: -0.4px;
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+
+.setup__gear svg {
+  width: 24px;
+  height: 24px;
 }
 
 .setup__scroll {
@@ -66,7 +72,7 @@
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 0 0 1px var(--onb-ring);
+  box-shadow: inset 0 0 0 1px var(--onb-ring);
 }
 
 .setup__avatar-empty {
@@ -98,17 +104,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 32px;
-  margin-top: 13px;
-  padding-left: 26px; /* 연필 아이콘만큼 밀어서 이름이 가운데 오게 */
+  gap: 3px;
+  height: 31px;
+  margin-top: 16px;
+  /* 이름 + 연필을 한 덩어리로 가운데 (피그마) */
 }
 
 .setup__name-text,
 .setup__name-input {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.44px;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.96px;
   color: var(--onb-text);
 }
 
@@ -128,35 +135,39 @@
 }
 
 .setup__name-edit {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   color: var(--onb-pencil);
 }
 
 /* ---------- 입력 칸 ---------- */
 .setup__field {
-  margin-top: 40px;
+  margin-top: 42px;
 }
 
 .setup__name + .setup__field {
-  margin-top: 54px;
+  margin-top: 49px;
+}
+
+.setup__field:last-child {
+  margin-top: 38px;
 }
 
 .setup__label {
   position: relative;
   display: inline-block;
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 600;
   line-height: 1.3;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.88px;
 }
 
 /* 필수 항목: 오른쪽 위 분홍 점 */
 .setup__label.is-required::after {
   content: '';
   position: absolute;
-  top: 0;
-  right: -9px;
+  top: -1px;
+  right: -11px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -166,24 +177,26 @@
 .setup__chips {
   display: flex;
   gap: 8px;
-  margin-top: 20px;
+  margin-top: 20.4px;
 }
 
 .chip {
   width: 72px;
   height: 40px;
-  border-radius: 20px;
+  border-radius: 100px;
   background: var(--onb-chip);
   color: var(--onb-chip-text);
   font-size: 16px;
-  font-weight: 600;
-  letter-spacing: -0.32px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.16px;
   transition: background 0.15s, color 0.15s;
 }
 
 .chip.is-on {
   background: #ff39c7;
   color: #fff;
+  font-weight: 600;
 }
 
 .chip--small {
@@ -195,15 +208,15 @@
   width: 100%;
   height: 42px;
   margin-top: 16px;
-  padding: 0 20px;
+  padding: 0 22px;
   border: var(--onb-input-border);
-  border-radius: 21px;
+  border-radius: 40px;
   background: var(--onb-input-bg);
   color: var(--onb-input-text);
   font-family: inherit;
   font-size: 16px;
   font-weight: 400;
-  letter-spacing: -0.16px;
+  letter-spacing: -0.32px;
   text-align: left;
   outline: none;
   transition: border-color 0.15s;
@@ -229,7 +242,7 @@
 }
 
 .setup__label + .setup__time .setup__input {
-  margin-top: 22px;
+  margin-top: 20.4px;
 }
 
 .setup__time {
@@ -272,24 +285,25 @@
 }
 
 .sheet--dark.time-sheet {
-  --wheel-dim: #7f7f7f;
+  --wheel-dim: rgba(255, 255, 255, 0.4);
   --wheel-on: #fff;
   --time-band: #1c1c1c;
-  --time-close: #1b1b1b;
-  --time-close-text: #b8b8b8;
-  --time-close-glow: rgba(255, 255, 255, 0.06);
+  --time-close: rgba(26, 26, 26, 0.9);
+  --time-close-text: #fff;
+  --time-close-glow: rgba(115, 115, 115, 0.25);
 }
 
 .time-sheet__head {
   position: relative;
   height: 103px;
-  padding: 36px 40px 0;
+  padding: 40px 40px 0;
 }
 
 .time-sheet__head h2 {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.88px;
 }
 
 .time-sheet__close {
@@ -303,13 +317,16 @@
   border-radius: 50%;
   background: var(--time-close);
   color: var(--time-close-text);
-  box-shadow: 0 0 22px var(--time-close-glow);
+  box-shadow: 3.5px 3.5px 32px var(--time-close-glow);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
 }
 
 .time-sheet__wheels {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* 피그마: 오전/오후 · 시 · 분 가운데가 90 · 201 · 303 */
+  grid-template-columns: 111px 111px 94px;
   margin: 0 34px;
 }
 
@@ -317,7 +334,7 @@
 .time-sheet__band {
   position: absolute;
   left: 0;
-  right: 0;
+  width: 334px;
   top: 67px;
   height: 61px;
   border-radius: 12px;
@@ -329,4 +346,10 @@
   position: relative;
   height: 132px;
   padding: 42px 20px 0;
+}
+
+/* 새 디자인: 위·아래 칸도 흐리게 가리지 않고 글자색(40% 흰색)으로만 구분해요 */
+.time-sheet .wheel {
+  mask-image: none;
+  -webkit-mask-image: none;
 }
