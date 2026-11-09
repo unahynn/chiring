@@ -21,8 +21,19 @@ PC에서는 폰 크기 프레임으로 보이고, 휴대폰에서는 화면에 �
 - [x] 친구방 (행운방 · Lucky Talk 캐러셀 · Lucky Moments) + 하단 탭바 — 피그마 node 1870:10692
 - [x] 스토리 보기 / 기운 스티커 붙이기 (Lucky Moments 카드 → 스토리)
 - [x] 채팅방 → 받은 주파수 카드(앞·뒤) → 주파수 듣기 → 듣기 완료
-- [x] 주파수: 누구에게(Me/Friend) → 친구 선택 → 내용 입력 전
-- [ ] 주파수 선택 (Lucky signal)
+- [x] 기운 충전 (새 디자인 · 피그마 'ZEN SERIF 영어 통일 ver.')
+  - 홈: 오늘의 기운 충전(Me/Friend) + 기운 주파수 다시 듣기(Vibe 카드, 오늘 부족한 기운이 맨 앞)
+  - 친구 선택 → 내용 입력 → 마음 고르기 → 필요한 기운 확인 → 기운 생성중(Light rays 셰이더)
+  - 주파수 카드 선택(Lucky signal) → 메세지 입력 → 선물 완료(카드를 문지르면 참으로 바뀌어요)
+
+## 기운 충전 메모
+
+- **ZEN SERIF 글자**(Me, Friend, Vibe, Lucky signal, '물부처의 기운' 등)는 폰트 라이선스(수정·재배포 금지) 때문에
+  폰트 파일 대신 글자 이미지로 넣었어요. 글자를 바꾸려면 `scripts/render-zen-text.py` 를 고쳐서 폰트가 설치된 컴퓨터에서 실행하세요.
+- **기운 생성중** 빛은 피그마 셰이더('Light rays')를 그대로 옮긴 WebGPU 코드예요 (`src/lib/custom-effect-runtime`, `src/lib/custom-effects`).
+  WebGPU가 없는 브라우저에선 같은 색의 정적인 빛 그라데이션으로 보여요.
+- 필요한 기운 확인의 빛 배경은 물 기운 그림 하나를 기운 색으로 돌려서(hue-rotate) 써요. 물 기운 + 연락/재회 내용이면 물부처가 나와요.
+- 새 카드 그림은 물 기운 3장만 있어요. 다른 기운은 예전 카드 그림을 그대로 써요.
 
 ## 온보딩
 
@@ -40,6 +51,7 @@ PC에서는 폰 크기 프레임으로 보이고, 휴대폰에서는 화면에 �
 src/
   components/   여러 화면에서 같이 쓰는 부분 (상태바, 하단 탭바)
   screens/      화면 단위 (FriendsRoom = 친구방, SajuSetup = 사주 설정, CharReport = 캐해 리포트)
-  data/         saju.ts(오행·간지 표) · sajuCalc.ts(네 기둥 계산) · report.ts(리포트 문구) · profile.ts(내 정보 저장)
+  data/         saju.ts(오행·간지 표) · sajuCalc.ts(네 기둥 계산) · report.ts(리포트 문구) · profile.ts(내 정보 저장) · energy.ts(기운 키워드·결과 문구)
+  lib/          피그마 셰이더 런타임 (기운 생성중 빛)
   assets/       피그마에서 가져온 이미지
 ```

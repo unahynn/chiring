@@ -9,6 +9,7 @@ import CharReport from './screens/CharReport'
 import { MOMENTS } from './data/moments'
 import { clearMe, loadMe, saveMe, type Me, type Profile } from './data/profile'
 import { loadSettings, saveSettings, useResolvedTheme, type Settings } from './data/settings'
+import { neededElement } from './data/saju'
 
 /** 주소 끝에 ?onboarding 을 붙이면 저장된 정보가 있어도 온보딩부터 다시 볼 수 있어요 (테스트용) */
 const FORCE_ONBOARDING = new URLSearchParams(window.location.search).has('onboarding')
@@ -166,8 +167,8 @@ export default function App() {
     <div className="phone">
       {tab === 'friends' && <FriendsRoom onOpenMoment={(id) => openStory(id)} onOpenRoom={setChatRoom} />}
       {tab === 'home' && <ComingSoon label="홈" />}
-      {tab === 'myluck' && <ComingSoon label="내 행운" />}
-      {tab === 'frequency' && <Frequency step={freqStep} onStepChange={setFreqStep} />}
+      {tab === 'myluck' && <ComingSoon label="행운 아카이브" />}
+      {tab === 'frequency' && <Frequency step={freqStep} onStepChange={setFreqStep} todayNeed={me ? neededElement(me.saju) : undefined} />}
       {!(tab === 'frequency' && freqStep !== 'home') && (
         <BottomNav
           active={tab}

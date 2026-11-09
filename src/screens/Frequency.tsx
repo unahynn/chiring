@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import StatusBar from '../components/StatusBar'
-import meTitle from '../assets/frequency/title-me.png'
-import friendTitle from '../assets/frequency/title-friend.png'
-import cardGlow from '../assets/frequency/card-glow.png'
-// 기운 선물 완료: 기운별 참(키링) + 배경 그라데이션 두 겹
-const CHARM_IMAGES = import.meta.glob<string>('../assets/charm/*.webp', { eager: true, import: 'default' })
-const charmAsset = (name: string) => CHARM_IMAGES[`../assets/charm/${name}.webp`]
-import luckySignalStroke from '../assets/frequency/lucky-signal-stroke.png'
-import luckySignalFill from '../assets/frequency/lucky-signal-fill.png'
+import { CaretLeftIcon } from '../components/icons'
+import { ShaderFill, useWebGPUDevice } from '../lib/custom-effect-runtime'
+import {
+  setup as setupLightRays,
+  render as renderLightRays,
+  manifest as lightRaysManifest,
+} from '../lib/custom-effects/CodeComponentId_ef36259fe6234eefc467a13193e7fb6ffc6f04e7_8354'
 import avatarDayun from '../assets/frequency/avatar-dayun.jpg'
 import avatarSsu from '../assets/frequency/avatar-ssu.jpg'
 import avatarNahyun from '../assets/frequency/avatar-nahyun.jpg'
@@ -16,6 +15,17 @@ import avatarSumin from '../assets/friends/avatar-sumin.jpg'
 import { ENERGY_META, energyCard, pickEnergy, suggestKeywords, type EnergyType } from '../data/energy'
 import './Frequency.css'
 
+/**
+ * 새 디자인 그림들 (assets/frequency/v2)
+ * ZEN SERIF 글자는 폰트 파일 대신 글자 이미지로 넣었어요 (폰트 라이선스: 재배포 금지).
+ */
+const V2 = import.meta.glob<string>('../assets/frequency/v2/*.{png,webp}', { eager: true, import: 'default' })
+const v2 = (name: string): string | undefined => V2[`../assets/frequency/v2/${name}.png`] ?? V2[`../assets/frequency/v2/${name}.webp`]
+
+// 기운 선물 완료: 기운별 참(키링)
+const CHARM_IMAGES = import.meta.glob<string>('../assets/charm/charm-*.webp', { eager: true, import: 'default' })
+const charmSrc = (energy: EnergyType) => CHARM_IMAGES[`../assets/charm/charm-${energy}.webp`]
+
 export type FrequencyStep = 'home' | 'friend' | 'compose' | 'result' | 'loading' | 'cards' | 'message' | 'gifted'
 
 /** 아바타 원 안에 겹쳐 그릴 사진들 (피그마 크롭 그대로, 44px 원 기준) */
@@ -23,9 +33,8 @@ type Layer = { src: string; style?: CSSProperties }
 
 type Friend = {
   id: string
+  /** 목록·제목에 보이는 이름 (제목에서는 첫 글자를 대문자로: Sumin) */
   name: string
-  /** 제목에 들어갈 부르는 이름: "수민이한테 어떤 기운을…" */
-  callName: string
   /** '나현님께'처럼 높여 부를 때 이름 */
   honorName: string
   /** 오늘 필요한 기운 → 점 색과 글자는 ENERGY_META에서 */
@@ -36,21 +45,19 @@ type Friend = {
 
 // 나중에 서버에서 받아올 친구 목록. 피그마 '주파수 친구 선택' 화면 그대로예요.
 const FRIENDS: Friend[] = [
-  { id: 'dayun', name: 'dayun', callName: '다윤이', honorName: '다윤', need: 'wood', avatarBg: '#d1d7de', layers: [{ src: avatarDayun }] },
+  { id: 'dayun', name: 'dayun', honorName: '다윤', need: 'wood', avatarBg: '#d1d7de', layers: [{ src: avatarDayun }] },
   {
     id: 'sumin',
     name: 'sumin',
-    callName: '수민이',
     honorName: '수민',
     need: 'water',
     avatarBg: '#d1d7de',
     layers: [{ src: avatarSumin, style: { left: -26, top: -17, width: 92, height: 92 } }],
   },
-  { id: 'hyeoni', name: 'hyeoni', callName: '다현이', honorName: '다현', need: 'fire', avatarBg: '#a40003', layers: [] },
+  { id: 'hyeoni', name: 'hyeoni', honorName: '다현', need: 'fire', avatarBg: '#a40003', layers: [] },
   {
     id: 'nahyun',
     name: 'Nahyun',
-    callName: '나현이',
     honorName: '나현',
     need: 'metal',
     avatarBg: '#d1d7de',
@@ -59,24 +66,27 @@ const FRIENDS: Friend[] = [
   {
     id: 'yujin',
     name: 'yujin',
-    callName: '유진이',
     honorName: '유진',
     need: 'metal',
     avatarBg: '#d1d7de',
     layers: [{ src: avatarYujin, style: { left: 0, top: '-12.41%', width: '100%', height: '177.78%', objectFit: 'fill' } }],
   },
-  { id: 'kwon', name: 'Kwon', callName: '민재', honorName: '민재', need: 'earth', avatarBg: '#8ec2ff', layers: [] },
-  { id: 'ssu', name: 'SSU', callName: '수진이', honorName: '수진', need: 'earth', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
+  { id: 'kwon', name: 'Kwon', honorName: '민재', need: 'earth', avatarBg: '#8ec2ff', layers: [] },
+  { id: 'ssu', name: 'SSU', honorName: '수진', need: 'earth', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
 ]
 
-/** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') */
-// 카드 그림: assets/frequency/card-{기운}-{1·2·3}.webp
+/** 'sumin' → 'Sumin' (피그마 제목 표기) */
+const titleName = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
+
+/** 영어 이름 뒤 을/를: 모음(a e i o u y)으로 끝나면 '를' (hyeoni를, Sumin을) */
+const objectParticle = (name: string) => (/[aeiouy]$/i.test(name) ? '를' : '을')
+
+/** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') — 그림: assets/frequency/card-{기운}-{1·2·3}.webp */
 const CARD_IMAGES = import.meta.glob<string>('../assets/frequency/card-*.webp', { eager: true, import: 'default' })
 const cardSrc = (energy: EnergyType, n: number) => CARD_IMAGES[`../assets/frequency/card-${energy}-${n}.webp`]
 
-/** 기운별 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') */
 const CARD_LABELS: Record<EnergyType, [string, string, string]> = {
-  water: ['미련 폭파 기운', '연락 말고 그냥 자 주파수', 'BYE BYE EX'],
+  water: ['미련 폭파 기운', '연락 말고 그냥 자 주파수', '새로운 인연이 들어오는 기운'],
   wood: ['새출발 풀충전', 'Let It Bloom!', '합격 싹 틔우는 기운'],
   metal: ['적게 일하고 많이 받는 기운', '지갑닫는 주파수', 'Saving mode ON'],
   fire: ['Just Move! Move! Move!', '가만히 있어도 살 10kg 빠지는 주파수', '10000 칼로리 태워주는 기운'],
@@ -86,22 +96,116 @@ const CARD_LABELS: Record<EnergyType, [string, string, string]> = {
 const signalCards = (energy: EnergyType) =>
   CARD_LABELS[energy].map((label, i) => ({ id: `${energy}-${i + 1}`, src: cardSrc(energy, i + 1), label }))
 
-/** 기운 생성중 화면의 움직이는 그라데이션 색 (기운마다 다르게) */
-const LOADING_COLORS: Record<EnergyType, [string, string, string]> = {
-  water: ['#6a2bd9', '#ff39c7', '#13e2ff'],
-  fire: ['#b0127a', '#ff39c7', '#ffa1f7'],
-  wood: ['#0f6b52', '#5effc7', '#aaf4ff'],
-  metal: ['#4f6410', '#cefb6a', '#f4ffc2'],
-  earth: ['#7a3412', '#ff8a3d', '#ffc89a'],
+/** '기운 주파수 다시 듣기' 카드 순서 (피그마) — 오늘 부족한 기운이 맨 앞으로 와요 */
+const VIBE_ORDER: EnergyType[] = ['fire', 'water', 'wood', 'earth', 'metal']
+
+const VIBE_NAMES: Record<EnergyType, string> = { fire: 'Fire', water: 'Water', wood: 'Wood', earth: 'Earth', metal: 'Metal' }
+
+/** 다시 듣기 카드 그라데이션 (피그마 그대로) */
+const VIBE_GRADIENTS: Record<EnergyType, { transform: string; stops: [string, number][]; inset: string }> = {
+  fire: {
+    transform: 'matrix(-7.7533e-13 11.95 -11.95 1.283e-12 80 80)',
+    stops: [['#ffa7c6', 0], ['#ff73b2', 0.24], ['#ff58a8', 0.36], ['#ff3e9e', 0.48], ['#ff5977', 0.607], ['#ff744f', 0.733], ['#ff8f28', 0.859], ['#ff9c14', 0.922], ['#ffa30a', 0.954], ['#ffaa00', 0.986]],
+    inset: 'inset 0 0 24px rgba(226, 217, 255, 0.6)',
+  },
+  water: {
+    transform: 'matrix(5.7915e-13 -15.9 11.432 -2.4643e-14 80 121)',
+    stops: [['#13e2ff', 0], ['#2bd4ff', 0.077], ['#42c6ff', 0.154], ['#71aaff', 0.308], ['#7f79ff', 0.529], ['#5996ff', 0.75], ['#33b4ff', 0.971]],
+    inset: 'inset 0 0 12px rgba(255, 255, 255, 0.25), inset 0 0 28px rgba(188, 198, 255, 0.6)',
+  },
+  wood: {
+    transform: 'matrix(-12.05 -12.05 10.307 -10.307 140.5 144.5)',
+    stops: [['#00f4c3', 0.058], ['#00cfd6', 0.577], ['#0ed2d1', 0.603], ['#1bd5cc', 0.63], ['#37dbc3', 0.683], ['#52e1ba', 0.736], ['#6ee7b0', 0.788], ['#a5f39d', 0.894], ['#dcff8a', 1]],
+    inset: 'inset 0 0 28px rgba(206, 213, 255, 0.95)',
+  },
+  earth: {
+    transform: 'matrix(5.4107e-14 21.25 -21.25 4.611e-12 80 12)',
+    stops: [['#ffe760', 0], ['#ffb259', 0.192], ['#ff8575', 0.418], ['#ff8f51', 0.709], ['#ff9a2d', 1]],
+    inset: 'inset 0 0 12px rgba(255, 255, 255, 0.25), inset 0 0 28px rgba(255, 216, 228, 0.95)',
+  },
+  metal: {
+    transform: 'matrix(13.75 8.3711e-13 2.3006e-13 9.8135 80 80)',
+    stops: [['#c7f75a', 0], ['#ffe15e', 0.481], ['#f5f08d', 0.712], ['#ecffbc', 0.942]],
+    inset: 'inset 0 0 12px rgba(255, 255, 255, 0.25), inset 0 0 20px rgba(233, 255, 204, 0.56)',
+  },
 }
+
+const vibeStyle = (energy: EnergyType): CSSProperties => {
+  const g = VIBE_GRADIENTS[energy]
+  const svg = `<svg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect width='100%' height='100%' fill='url(#g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='${g.transform}'>${g.stops
+    .map(([c, o]) => `<stop stop-color='${c}' offset='${o}'/>`)
+    .join('')}</radialGradient></defs></svg>`
+  return {
+    backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`,
+    boxShadow: `1.749px 1.749px 23.696px rgba(187, 187, 187, 0.25), ${g.inset}`,
+  }
+}
+
+/**
+ * 기운 생성중: 피그마 'Light rays' 셰이더. 물 기운은 피그마 값 그대로, 나머지는 기운 색으로 바꿔요.
+ * (색은 0~1 RGB)
+ */
+const RAY_COLORS: Record<EnergyType, [[number, number, number], [number, number, number]]> = {
+  water: [
+    [0.22306941449642181, 0.766920804977417, 1],
+    [0.6352941393852234, 0.3490196168422699, 1],
+  ],
+  fire: [
+    [1, 0.36, 0.78],
+    [1, 0.63, 0.97],
+  ],
+  wood: [
+    [0.37, 1, 0.78],
+    [0.08, 0.72, 0.85],
+  ],
+  metal: [
+    [0.81, 0.98, 0.42],
+    [1, 0.88, 0.37],
+  ],
+  earth: [
+    [1, 0.54, 0.24],
+    [1, 0.33, 0.12],
+  ],
+}
+
+const lightRays = (energy: EnergyType) => {
+  const [c1, c2] = RAY_COLORS[energy]
+  return {
+    setup: setupLightRays,
+    render: renderLightRays,
+    manifest: lightRaysManifest,
+    params: {
+      speed: 0.5,
+      lightSource: { x: 50, y: -30, radius: 85, angle: 90 },
+      inputMode: 0,
+      intensity: 0.20000000298023224,
+      threshold: 0.5,
+      beamSoftness: 0.5,
+      color1: { r: c1[0], g: c1[1], b: c1[2], a: 1 },
+      colorBlend: 0,
+      spread: 0.5,
+      glow: 0.5,
+      color2: { r: c2[0], g: c2[1], b: c2[2], a: 1 },
+      density: 0.5,
+    },
+  }
+}
+
+/** 기운별 셰이더 (한 번만 만들어서 화면이 다시 그려져도 같은 셰이더를 써요) */
+const LIGHT_RAYS = Object.fromEntries(VIBE_ORDER.map((e) => [e, lightRays(e)])) as Record<EnergyType, ReturnType<typeof lightRays>>
+
+/** 필요한 기운 확인 빛: 물 기운 그림을 기운 색 쪽으로 돌려 써요 */
+const GLOW_HUE: Record<EnergyType, number> = { water: 0, fire: 125, wood: -40, metal: -115, earth: 170 }
 
 type Props = {
   step: FrequencyStep
   onStepChange: (step: FrequencyStep) => void
+  /** 내 사주에서 오늘 부족한 기운 ('오늘 부족한 불의 기운, …') */
+  todayNeed?: EnergyType
 }
 
-/** 주파수 탭: 누구에게 → 어떤 친구에게 → 내용 입력 */
-export default function Frequency({ step, onStepChange }: Props) {
+/** 기운 충전 탭: 누구에게 → 친구 → 내용 → 필요한 기운 → 생성중 → 카드 → 메세지 → 선물 완료 */
+export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Props) {
   const [picked, setPicked] = useState<'me' | 'friend' | null>(null)
   const [friendId, setFriendId] = useState<string | null>(null)
   const friend = FRIENDS.find((f) => f.id === friendId)
@@ -109,7 +213,7 @@ export default function Frequency({ step, onStepChange }: Props) {
   const [mode, setMode] = useState<'me' | 'friend'>('friend')
   const isMe = mode === 'me'
   /** 화면 문구에 들어갈 대상. 나를 위한 기운이면 '나' */
-  const target = isMe ? { callName: '나', honorName: '나', need: undefined } : friend
+  const target = isMe ? { name: '나', honorName: '나', need: undefined } : friend && { ...friend, name: titleName(friend.name) }
 
   // 내용 입력 → 키워드 선택
   const [text, setText] = useState('')
@@ -141,6 +245,14 @@ export default function Frequency({ step, onStepChange }: Props) {
   const swipeX = useRef<number | null>(null)
   const swiped = useRef(false)
   const energy = pickEnergy(text, picks, target?.need)
+  // WebGPU가 없는 브라우저에선 셰이더 대신 같은 색의 정적인 빛을 보여줘요
+  const { error: gpuError } = useWebGPUDevice()
+
+  // 선물 완료: 안내(어둡게) → 문지르기 → 참 등장
+  const [rub, setRub] = useState<'guide' | 'rub' | 'done'>('guide')
+  const [rubProgress, setRubProgress] = useState(0)
+  const rubLast = useRef<{ x: number; y: number } | null>(null)
+  const rubAcc = useRef(0)
 
   // 기운 생성중 → 잠시 뒤 카드 선택 화면으로
   useEffect(() => {
@@ -164,10 +276,10 @@ export default function Frequency({ step, onStepChange }: Props) {
           <CloseButton onClick={() => onStepChange('home')} />
           <span className="freq__gnb-title">Friend</span>
         </header>
-        <h1 className="freq__title freq__title--friend">
+        <h1 className="freq__title">
           어떤 친구에게
           <br />
-          <em>기운</em>을 보내줄까?
+          기운을 보내줄까?
         </h1>
 
         <ul className={`friend-list${friendId ? ' has-pick' : ''}`}>
@@ -208,16 +320,13 @@ export default function Frequency({ step, onStepChange }: Props) {
   }
 
   if (step === 'compose' && target) {
-    // 따옴표가 없으면 앞뒤로 붙여서 디자인처럼 “ ” 안에 보여줘요
-    const t = text.trim()
-    const display = `${/^[“"]/.test(t) ? '' : '“'}${t}${/[”"]$/.test(t) ? '' : '”'}`
     return (
       <div className="freq">
         <StatusBar />
         <header className="freq__gnb">
           <CloseButton onClick={() => onStepChange('home')} />
         </header>
-        <h1 className="freq__title freq__title--friend">
+        <h1 className="freq__title freq__title--compose">
           {isMe ? (
             <>
               지금 나에게는
@@ -226,14 +335,12 @@ export default function Frequency({ step, onStepChange }: Props) {
             </>
           ) : (
             <>
-              {target.callName}한테
+              <em className="freq__name">{target.name}</em>한테
               <br />
               어떤 기운을 보내줄까?
             </>
           )}
         </h1>
-        <img className="compose__glow" src={cardGlow} alt="" />
-        <div className="compose__shine" aria-hidden />
         <div
           className={`compose__card${editing ? ' is-editing' : ''}`}
           onClick={() => {
@@ -255,7 +362,7 @@ export default function Frequency({ step, onStepChange }: Props) {
               maxLength={80}
             />
           ) : hasText ? (
-            <p className="compose__text">{display}</p>
+            <p className="compose__text">{text.trim()}</p>
           ) : (
             <span className="compose__placeholder">{isMe ? '탭하여 요즘 내 상황을 적어주세요' : '탭하여 내용을 입력해주세요'}</span>
           )}
@@ -315,64 +422,63 @@ export default function Frequency({ step, onStepChange }: Props) {
   }
 
   if (step === 'result' && target) {
-    const card = energyCard(energy, target.callName, text)
-    const bg = `url("data:image/svg+xml;utf8,${encodeURIComponent(
-      `<svg viewBox='0 0 306 401' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect width='100%' height='100%' fill='url(#g)'/><defs><radialGradient id='g' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(25.2 31.254 -23.85 18.576 54 105.16)'>${card.stops
-        .map((c, i) => `<stop stop-color='${c}' offset='${i / 4}'/>`)
-        .join('')}</radialGradient></defs></svg>`,
-    )}")`
+    const card = energyCard(energy, text)
+    const withBuddha = card.key === 'water-contact'
+    const titleImg = v2(`need-title-${card.key}`)
     return (
-      <div className="freq">
+      <div className="freq need">
         <StatusBar />
+        <img
+          className="need__glow"
+          src={v2(withBuddha ? 'need-glow-buddha' : 'need-glow')}
+          alt=""
+          style={{ filter: GLOW_HUE[energy] ? `hue-rotate(${GLOW_HUE[energy]}deg)` : undefined }}
+        />
         <header className="freq__gnb">
-          <CloseButton onClick={() => onStepChange('home')} />
+          <BackButton onClick={() => onStepChange('compose')} />
         </header>
-        <h1 className="freq__title freq__title--friend">
-          지금 {isMe ? '나' : target.callName}에게
+        <h1 className="freq__title need__title">
+          지금 {isMe ? '나' : <em style={{ color: card.color }}>{target.name}</em>}에게
           <br />
-          <em style={{ color: card.color }}>필요한 기운</em>은...
+          필요한 기운은
         </h1>
-        <div className="energy-card" style={{ backgroundImage: bg, ['--glow' as string]: card.color }}>
-          <span className="energy-card__light" aria-hidden />
-          <p className="energy-card__sub">{card.subtitle}</p>
-          <p className="energy-card__title">{card.title}</p>
-          <p className="energy-card__desc">{card.desc}</p>
-          {/* 키워드는 2개씩 두 줄 */}
-          <div className="energy-card__tags">
-            {[card.tags.slice(0, 2), card.tags.slice(2, 4)].map((row, i) => (
-              <div key={i} className="energy-card__tag-row">
-                {row.map((t) => (
-                  <span key={t}>{t}</span>
-                ))}
-              </div>
-            ))}
-          </div>
+        <p className="need__sub">{card.subtitle}</p>
+        {titleImg ? <img className="need__name" src={titleImg} alt={card.title} /> : <p className="need__name need__name--text">{card.title}</p>}
+        {/* 물부처 그림은 빛 배경에 함께 들어 있어요. 다른 기운은 그 기운의 참을 보여줘요 */}
+        {!withBuddha && <img className="need__charm" src={charmSrc(energy)} alt="" />}
+        <div className="need__tags">
+          <p>
+            <span>{card.tags[0]}</span>
+            <span>{card.tags[1]}</span>
+          </p>
+          <p>
+            <span>{card.tags[2]}</span>
+          </p>
         </div>
-        <div className="freq__actions">
-          <button className="freq__btn freq__btn--prev" onClick={() => onStepChange('compose')}>
-            이전
-          </button>
-          <button className="freq__btn freq__btn--next" onClick={() => onStepChange('loading')}>
-            주파수 만들기
-          </button>
-        </div>
+        <button className="freq__btn freq__btn--center" onClick={() => onStepChange('loading')}>
+          주파수 만들기
+        </button>
         <div className="freq__indicator" />
       </div>
     )
   }
 
   if (step === 'loading' && target) {
-    const [c1, c2, c3] = LOADING_COLORS[energy]
+    const [c1, c2] = RAY_COLORS[energy]
+    const rgb = (c: number[]) => `rgb(${c.map((v) => Math.round(v * 255)).join(' ')})`
     return (
-      <div className="freq loading" style={{ ['--c1' as string]: c1, ['--c2' as string]: c2, ['--c3' as string]: c3 }}>
-        <div className="loading__blob loading__blob--a" />
-        <div className="loading__blob loading__blob--b" />
-        <div className="loading__blob loading__blob--c" />
-        <StatusBar />
+      <div className="freq loading" style={{ ['--c1' as string]: rgb(c1), ['--c2' as string]: rgb(c2) }}>
+        {gpuError ? <div className="loading__fallback" /> : <ShaderFill shader={LIGHT_RAYS[energy]} className="loading__rays" />}
+        <StatusBar tone="dark" />
         <h1 className="loading__title">
-          {target.callName}를 위한
+          {isMe ? '나를' : `${target.name}${objectParticle(target.name)}`} 위한
           <br />
-          기운 생성중<span className="loading__dots"><i>·</i><i>·</i><i>·</i></span>
+          기운 생성중
+          <span className="loading__dots">
+            <i>·</i>
+            <i>·</i>
+            <i>·</i>
+          </span>
         </h1>
         <div className="freq__indicator loading__indicator" />
       </div>
@@ -388,18 +494,7 @@ export default function Frequency({ step, onStepChange }: Props) {
           <CloseButton onClick={() => onStepChange('home')} />
           <span className="freq__gnb-title freq__gnb-title--white">{isMe ? '나의 주파수' : '주파수 선물하기'}</span>
         </header>
-        {/* 글자 테두리(검정)는 그림 그대로, 글자 색만 기운 색으로 칠해요 */}
-        <div className="signal__title" role="img" aria-label="Lucky signal">
-          <img src={luckySignalStroke} alt="" />
-          <span
-            className="signal__title-fill"
-            style={{
-              background: ENERGY_META[energy].dot,
-              WebkitMaskImage: `url(${luckySignalFill})`,
-              maskImage: `url(${luckySignalFill})`,
-            }}
-          />
-        </div>
+        <img className="signal__title" src={v2('lucky-signal')} alt="Lucky signal" />
         <div
           className="signal__stage"
           onPointerDown={(e) => {
@@ -453,53 +548,112 @@ export default function Frequency({ step, onStepChange }: Props) {
           <span className="freq__gnb-title freq__gnb-title--white">{isMe ? '나의 주파수' : '주파수 선물하기'}</span>
         </header>
         <img className="gift__card" src={card.src} alt={card.label} />
-        <textarea
-          id="gift-message"
-          className="gift__message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder={isMe ? '나에게 해주고 싶은 말을 남겨줘' : `${target.callName}에게 한마디 남겨줘`}
-          maxLength={60}
-          rows={2}
-        />
-        <button
-          className="freq__btn freq__btn--wide"
-          disabled={!message.trim()}
-          onClick={() => onStepChange('gifted')}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!message.trim()) return
+            // 선물 완료 화면은 늘 문지르기 안내부터
+            setRub('guide')
+            setRubProgress(0)
+            rubAcc.current = 0
+            onStepChange('gifted')
+          }}
         >
-          {isMe ? '기운 채우기' : '기운 보내기'}
-        </button>
+          <textarea
+            id="gift-message"
+            className="gift__message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={isMe ? '나에게 해주고 싶은 말을 남겨줘' : `${target.name}에게 한마디 남겨줘`}
+            maxLength={60}
+            rows={2}
+          />
+          <button className="freq__btn freq__btn--wide" disabled={!message.trim()}>
+            {isMe ? '기운 채우기' : '기운 보내기'}
+          </button>
+        </form>
         <div className="freq__indicator" />
       </div>
     )
   }
 
   if (step === 'gifted' && target) {
+    const card = signalCards(energy)[cardIndex]
+    // 카드 위를 문지른 거리만큼 차올라요. 다 차면 참으로 바뀌어요.
+    const RUB_GOAL = 900
+    const onRubDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (rub === 'done') return
+      setRub('rub')
+      e.currentTarget.setPointerCapture(e.pointerId)
+      rubLast.current = { x: e.clientX, y: e.clientY }
+    }
+    const onRubMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+      const last = rubLast.current
+      if (!last || rub === 'done') return
+      const d = Math.hypot(e.clientX - last.x, e.clientY - last.y)
+      rubLast.current = { x: e.clientX, y: e.clientY }
+      const next = Math.min(1, rubAcc.current + d / RUB_GOAL)
+      rubAcc.current = next
+      setRubProgress(next)
+      if (next >= 1) {
+        rubLast.current = null
+        setRub('done')
+      }
+    }
+    const onRubUp = () => {
+      rubLast.current = null
+    }
     return (
-      <div className={`freq gifted gifted--${energy}`}>
-        {/* 뒤 그라데이션 두 겹이 서로 다르게 천천히 일렁여요 */}
-        <img className="gifted__bg gifted__bg--a" src={charmAsset(`bg-${energy}-a`)} alt="" />
-        <img className="gifted__bg gifted__bg--b" src={charmAsset(`bg-${energy}-b`)} alt="" />
+      <div className={`freq gifted is-${rub}`}>
+        <img className="gifted__glow" src={v2('gift-glow')} alt="" />
         <StatusBar />
         <h1 className="gifted__title">
-          {isMe ? '나에게' : `${target.honorName}님께`}
+          {isMe ? (
+            '나에게'
+          ) : (
+            <>
+              <em style={{ color: energyCard(energy, text).color }}>{target.name}</em>님께
+            </>
+          )}
           <br />
           {isMe ? '기운 충전 완료!' : '기운 선물 완료!'}
         </h1>
-        <div className={`gifted__charm gifted__charm--${energy}`}>
-          <img src={charmAsset(`charm-${energy}`)} alt={`${ENERGY_META[energy].label} 참`} />
-        </div>
-        <button
-          className="freq__btn freq__btn--wide gifted__btn"
-          onClick={() => {
-            setMessage('')
-            resetCompose()
-            setFriendId(null)
-            onStepChange('home')
-          }}
-        >
-          완료
-        </button>
+
+        {rub !== 'done' ? (
+          <div
+            className="gifted__card"
+            style={{ ['--rub' as string]: rubProgress }}
+            onPointerDown={onRubDown}
+            onPointerMove={onRubMove}
+            onPointerUp={onRubUp}
+            onPointerCancel={onRubUp}
+          >
+            <img src={card.src} alt={card.label} draggable={false} />
+          </div>
+        ) : (
+          <div className={`gifted__charm gifted__charm--${energy}`}>
+            <img src={charmSrc(energy)} alt={`${ENERGY_META[energy].label} 참`} />
+          </div>
+        )}
+
+        {/* 처음 들어오면 화면을 어둡게 하고 문지르는 손을 보여줘요. 아무 데나 누르면 사라져요 */}
+        {rub === 'guide' && <div className="gifted__dim" onPointerDown={() => setRub('rub')} />}
+        {rub === 'guide' && <img className="gifted__hand" src={v2('hand-rub')} alt="" />}
+        {rub !== 'done' && <p className="gifted__hint">마음을 담아 카드를 문질러주세요</p>}
+
+        {rub === 'done' && (
+          <button
+            className="freq__btn freq__btn--wide gifted__btn"
+            onClick={() => {
+              setMessage('')
+              resetCompose()
+              setFriendId(null)
+              onStepChange('home')
+            }}
+          >
+            확인
+          </button>
+        )}
         <div className="freq__indicator gifted__indicator" />
       </div>
     )
@@ -512,13 +666,14 @@ export default function Frequency({ step, onStepChange }: Props) {
       resetCompose()
       setMode(who)
     }
-    // 박스 색이 바뀌는 걸 잠깐 보여주고 다음 화면으로
+    // 눌린 카드를 잠깐 보여주고 다음 화면으로
     window.setTimeout(() => {
       setPicked(null)
       // 나를 위한 기운은 친구 선택 없이 바로 내용 입력으로
       onStepChange(who === 'me' ? 'compose' : 'friend')
     }, 380)
   }
+  const vibes = [todayNeed, ...VIBE_ORDER.filter((e) => e !== todayNeed)]
 
   return (
     <div className="freq freq--home">
@@ -526,20 +681,12 @@ export default function Frequency({ step, onStepChange }: Props) {
       <header className="freq__gnb">
         <span className="freq__gnb-title">기운 충전</span>
       </header>
-      <h1 className="freq__title">
-        누구에게
-        <br />
-        <em>기운</em>을 보내줄까?
-      </h1>
-      <p className="freq__desc">
-        나를 위해 채워도 좋고
-        <br />
-        친구를 위해 만들어 선물할 수도 있어.
-      </p>
+      <h1 className="home__h">오늘의 기운 충전</h1>
+      <p className="home__desc">필요한 기운을 나를 위해 채우거나 친구에게 보내보세요.</p>
 
       <div className="who">
         <button className={`who__card${picked === 'me' ? ' is-picked' : ''}`} onClick={() => choose('me')}>
-          <img className="who__title" src={meTitle} alt="Me" width={50.57} height={33.86} />
+          <img className="who__title" src={v2('text-me')} alt="Me" width={61} height={42} />
           <span className="who__desc">
             나를 위한
             <br />내 기운 채우기
@@ -547,7 +694,7 @@ export default function Frequency({ step, onStepChange }: Props) {
           <ArrowCircle />
         </button>
         <button className={`who__card${picked === 'friend' ? ' is-picked' : ''}`} onClick={() => choose('friend')}>
-          <img className="who__title" src={friendTitle} alt="Friend" width={96.13} height={33.86} />
+          <img className="who__title" src={v2('text-friend')} alt="Friend" width={131} height={42} />
           <span className="who__desc">
             친구에게
             <br />
@@ -556,6 +703,16 @@ export default function Frequency({ step, onStepChange }: Props) {
           <ArrowCircle />
         </button>
       </div>
+
+      <h2 className="home__h home__h--replay">기운 주파수 다시 듣기</h2>
+      <p className="home__desc home__desc--replay">오늘 부족한 {ENERGY_META[todayNeed].label.split(' ')[0]}의 기운, 지난 주파수로 채워봐요.</p>
+      <ul className="vibes">
+        {vibes.map((e) => (
+          <li key={e} className="vibe" style={vibeStyle(e)}>
+            <img src={v2(`vibe-${e}`)} alt={`${VIBE_NAMES[e]} Vibe`} width={129} height={29} />
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -571,9 +728,10 @@ function ArrowCircle() {
   )
 }
 
+/** 상단 왼쪽 동그란 닫기(X) 버튼 */
 function CloseButton({ onClick }: { onClick: () => void }) {
   return (
-    <button className="freq__close" onClick={onClick} aria-label="닫기">
+    <button className="freq__round" onClick={onClick} aria-label="닫기">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
         <path
           d="M0.922852 0.923828L14.9229 14.9238M14.9229 0.923828L0.922852 14.9238"
@@ -583,6 +741,15 @@ function CloseButton({ onClick }: { onClick: () => void }) {
           strokeLinejoin="round"
         />
       </svg>
+    </button>
+  )
+}
+
+/** 상단 왼쪽 동그란 뒤로(<) 버튼 */
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button className="freq__round" onClick={onClick} aria-label="뒤로">
+      <CaretLeftIcon size={22} />
     </button>
   )
 }

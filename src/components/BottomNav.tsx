@@ -6,9 +6,9 @@ export type TabKey = 'home' | 'myluck' | 'friends' | 'frequency'
 
 const TABS: { key: TabKey; label: string; Icon: ComponentType }[] = [
   { key: 'home', label: '홈', Icon: HomeIcon },
-  { key: 'myluck', label: '내 행운', Icon: MyLuckIcon },
+  { key: 'myluck', label: '행운 아카이브', Icon: MyLuckIcon },
   { key: 'friends', label: '친구방', Icon: FriendsIcon },
-  { key: 'frequency', label: '주파수', Icon: FrequencyIcon },
+  { key: 'frequency', label: '기운 충전', Icon: FrequencyIcon },
 ]
 
 type Props = {
