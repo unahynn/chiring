@@ -1,6 +1,7 @@
 import type { EnergyType } from './energy'
 
-/** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') — 그림: assets/frequency/card-{기운}-{1·2·3}.webp */
+/** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') — 그림: assets/frequency/card-{기운}-{1·2·3}.webp
+ *  모든 카드는 같은 비율 (978×1236, 화면에선 326×412 · 옆 카드 248×314) */
 const CARD_IMAGES = import.meta.glob<string>('../assets/frequency/card-*.webp', { eager: true, import: 'default' })
 export const cardSrc = (energy: EnergyType, n: number) => CARD_IMAGES[`../assets/frequency/card-${energy}-${n}.webp`]
 

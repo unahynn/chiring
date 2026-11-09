@@ -519,7 +519,12 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire', myNa
           <CloseButton onClick={() => onStepChange('home')} />
           <span className="freq__gnb-title freq__gnb-title--white">{isMe ? '나의 주파수' : '주파수 선물하기'}</span>
         </header>
-        <img className="signal__title" src={v2('lucky-signal')} alt="Lucky signal" />
+        {/* 흙 기운은 제목도 카드처럼 굵은 주황 글자 (피그마) */}
+        {energy === 'earth' ? (
+          <img className="signal__title signal__title--earth" src={v2('lucky-signal-earth')} alt="Lucky signal" />
+        ) : (
+          <img className="signal__title" src={v2('lucky-signal')} alt="Lucky signal" />
+        )}
         <div
           className="signal__stage"
           onPointerDown={(e) => {
