@@ -76,5 +76,5 @@ src/
 ```
 
 ## 팀 프로토타입(naver-1020-luck)에 붙이기
-`npm run build:team` → `dist-team/index.html` (이미지·폰트까지 한 파일). 팀 저장소의 `chiring/index.html` 에 덮어써요.
-팀 빌드에서는 온보딩을 건너뛰고, 하단 내비 홈·친구방과 스토리 뒤로가기가 팀 프로토타입 화면으로 가요 (`src/App.tsx` 의 `TEAM`).
+`npm run build:team` → `dist-team/index.html` (주파수 + 온보딩만, 이미지·폰트까지 한 파일). 팀 저장소의 `chiring/index.html` 에 덮어써요.
+홈·친구방은 팀 프로토타입 화면을 써요. 시작 화면(`#frequency` · `#onboarding`)과 신호(`chiring:onboarding` · `chiring:reset` → / `chiring:home` · `chiring:friends` ←)는 `src/TeamApp.tsx` 맨 위에 적어 두었어요.
