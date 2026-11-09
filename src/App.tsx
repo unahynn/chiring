@@ -168,7 +168,12 @@ export default function App() {
       {tab === 'friends' && <FriendsRoom onOpenMoment={(id) => openStory(id)} onOpenRoom={setChatRoom} />}
       {tab === 'home' && <ComingSoon label="홈" />}
       {tab === 'myluck' && <ComingSoon label="아카이브" />}
-      {tab === 'frequency' && <Frequency step={freqStep} onStepChange={setFreqStep} todayNeed={me ? neededElement(me.saju) : undefined} />}
+      {tab === 'frequency' && <Frequency
+          step={freqStep}
+          onStepChange={setFreqStep}
+          todayNeed={me ? neededElement(me.saju) : undefined}
+          myName={me?.profile.name}
+        />}
       {!(tab === 'frequency' && freqStep !== 'home') && (
         <BottomNav
           active={tab}

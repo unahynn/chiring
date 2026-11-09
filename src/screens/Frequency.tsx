@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerE
 import StatusBar from '../components/StatusBar'
 import { hapticSuccess, hapticTick } from '../lib/haptic'
 import WishGlow, { type WishGlowHandle } from '../components/WishGlow'
-import { CaretLeftIcon } from '../components/icons'
+import { BackButton, CloseButton } from '../components/RoundButton'
+import { signalCards, type SignalCard } from '../data/cards'
+import { ReplayCard, ReplayList } from './FrequencyReplay'
 import { ShaderFill, useWebGPUDevice } from '../lib/custom-effect-runtime'
 import {
   setup as setupLightRays,
@@ -28,7 +30,18 @@ const v2 = (name: string): string | undefined => V2[`../assets/frequency/v2/${na
 const CHARM_IMAGES = import.meta.glob<string>('../assets/charm/charm-*.webp', { eager: true, import: 'default' })
 const charmSrc = (energy: EnergyType) => CHARM_IMAGES[`../assets/charm/charm-${energy}.webp`]
 
-export type FrequencyStep = 'home' | 'friend' | 'compose' | 'result' | 'loading' | 'cards' | 'message' | 'gifted'
+export type FrequencyStep =
+  | 'home'
+  | 'friend'
+  | 'compose'
+  | 'result'
+  | 'loading'
+  | 'cards'
+  | 'message'
+  | 'gifted'
+  // 기운 주파수 다시 듣기 → 카드 목록 → 카드 보기(뒤집으면 메세지)
+  | 'replay'
+  | 'replayCard'
 
 /** 아바타 원 안에 겹쳐 그릴 사진들 (피그마 크롭 그대로, 44px 원 기준) */
 type Layer = { src: string; style?: CSSProperties }
@@ -83,20 +96,6 @@ const titleName = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
 /** 영어 이름 뒤 을/를: 모음(a e i o u y)으로 끝나면 '를' (hyeoni를, Sumin을) */
 const objectParticle = (name: string) => (/[aeiouy]$/i.test(name) ? '를' : '을')
 
-/** 주파수 카드 3종 (피그마 '주파수 카드 선택 옵션 1·2·3') — 그림: assets/frequency/card-{기운}-{1·2·3}.webp */
-const CARD_IMAGES = import.meta.glob<string>('../assets/frequency/card-*.webp', { eager: true, import: 'default' })
-const cardSrc = (energy: EnergyType, n: number) => CARD_IMAGES[`../assets/frequency/card-${energy}-${n}.webp`]
-
-const CARD_LABELS: Record<EnergyType, [string, string, string]> = {
-  water: ['미련 폭파 기운', '연락 말고 그냥 자 주파수', '새로운 인연이 들어오는 기운'],
-  wood: ['새출발 풀충전', 'Let It Bloom!', '합격 싹 틔우는 기운'],
-  metal: ['적게 일하고 많이 받는 기운', '지갑닫는 주파수', 'Saving mode ON'],
-  fire: ['Just Move! Move! Move!', '가만히 있어도 살 10kg 빠지는 주파수', '10000 칼로리 태워주는 기운'],
-  earth: ['일단 진정 기운', 'Build It Up!', '차곡차곡 쌓아올리기'],
-}
-
-const signalCards = (energy: EnergyType) =>
-  CARD_LABELS[energy].map((label, i) => ({ id: `${energy}-${i + 1}`, src: cardSrc(energy, i + 1), label }))
 
 /** '기운 주파수 다시 듣기' 카드 순서 (피그마) — 오늘 부족한 기운이 맨 앞으로 와요 */
 const VIBE_ORDER: EnergyType[] = ['fire', 'water', 'wood', 'earth', 'metal']
@@ -216,10 +215,12 @@ type Props = {
   onStepChange: (step: FrequencyStep) => void
   /** 내 사주에서 오늘 부족한 기운 ('오늘 부족한 불의 기운, …') */
   todayNeed?: EnergyType
+  /** 내 이름 (다시 듣기 카드 뒷면 'To. ○○') */
+  myName?: string
 }
 
 /** 기운 충전 탭: 누구에게 → 친구 → 내용 → 필요한 기운 → 생성중 → 카드 → 메세지 → 선물 완료 */
-export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Props) {
+export default function Frequency({ step, onStepChange, todayNeed = 'fire', myName = '나' }: Props) {
   const [picked, setPicked] = useState<'me' | 'friend' | null>(null)
   const [friendId, setFriendId] = useState<string | null>(null)
   const friend = FRIENDS.find((f) => f.id === friendId)
@@ -252,6 +253,10 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
     setKeywordDraft('')
     setWritingKeyword(false)
   }
+
+  // 기운 주파수 다시 듣기
+  const [replayEnergy, setReplayEnergy] = useState<EnergyType>(todayNeed)
+  const [replayCard, setReplayCard] = useState<SignalCard | null>(null)
 
   // 카드 선택 · 메세지
   const [cardIndex, setCardIndex] = useState(0)
@@ -729,6 +734,26 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
     )
   }
 
+  // 기운 주파수 다시 듣기
+  if (step === 'replay') {
+    return (
+      <ReplayList
+        energy={replayEnergy}
+        onEnergy={setReplayEnergy}
+        onBack={() => onStepChange('home')}
+        onPick={(c) => {
+          setReplayCard(c)
+          onStepChange('replayCard')
+        }}
+      />
+    )
+  }
+  if (step === 'replayCard' && replayCard) {
+    return (
+      <ReplayCard key={replayCard.id} card={replayCard} energy={replayEnergy} toName={myName} onClose={() => onStepChange('replay')} />
+    )
+  }
+
   // step === 'home'
   const choose = (who: 'me' | 'friend') => {
     setPicked(who)
@@ -778,8 +803,17 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
       <p className="home__desc home__desc--replay">오늘 부족한 {ENERGY_META[todayNeed].label.split(' ')[0]}의 기운, 지난 주파수로 채워봐요.</p>
       <ul className="vibes">
         {vibes.map((e) => (
-          <li key={e} className="vibe" style={vibeStyle(e)}>
-            <img src={v2(`vibe-${e}`)} alt={`${VIBE_NAMES[e]} Vibe`} width={129} height={29} />
+          <li key={e}>
+            <button
+              className="vibe"
+              style={vibeStyle(e)}
+              onClick={() => {
+                setReplayEnergy(e)
+                onStepChange('replay')
+              }}
+            >
+              <img src={v2(`vibe-${e}`)} alt={`${VIBE_NAMES[e]} Vibe`} width={129} height={29} />
+            </button>
           </li>
         ))}
       </ul>
@@ -798,28 +832,3 @@ function ArrowCircle() {
   )
 }
 
-/** 상단 왼쪽 동그란 닫기(X) 버튼 */
-function CloseButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button className="freq__round" onClick={onClick} aria-label="닫기">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-        <path
-          d="M0.922852 0.923828L14.9229 14.9238M14.9229 0.923828L0.922852 14.9238"
-          stroke="white"
-          strokeWidth="1.84593"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </button>
-  )
-}
-
-/** 상단 왼쪽 동그란 뒤로(<) 버튼 */
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button className="freq__round" onClick={onClick} aria-label="뒤로">
-      <CaretLeftIcon size={22} />
-    </button>
-  )
-}
