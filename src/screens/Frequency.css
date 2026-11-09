@@ -1045,8 +1045,16 @@
   top: 430px;
   width: 402px;
   height: 444px;
-  max-width: none;
   pointer-events: none;
+  /* 아래에서 위로 기운 색이 번져요 (--g-hi 밝은 색 → --g-mid → --g-lo → 배경) */
+  background:
+    radial-gradient(
+      95% 65% at 50% 100%,
+      var(--g-hi, #2aa0dd) 0%,
+      color-mix(in srgb, var(--g-hi, #2aa0dd) 40%, transparent) 50%,
+      transparent 100%
+    ),
+    radial-gradient(140% 100% at 50% 100%, var(--g-mid, #3a3e98) 0%, var(--g-lo, #2a2148) 50%, transparent 90%);
   transform-origin: 50% 100%;
   animation: gifted-glow 5s ease-in-out infinite alternate;
 }
@@ -1228,7 +1236,12 @@
   content: '';
   position: absolute;
   inset: -60%;
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.9), rgba(140, 230, 255, 0.4) 40%, transparent 70%);
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 255, 255, 0.9),
+    color-mix(in srgb, var(--wish, #8ce6ff) 40%, transparent) 40%,
+    transparent 70%
+  );
   animation: charm-flash 0.9s ease-out both;
   pointer-events: none;
 }
@@ -1297,7 +1310,7 @@
   }
 }
 
-/* 문지른 빛은 카드 위에 겹쳐요 (안내 어둠·문구보다는 아래) */
+/* 문지른 빛은 카드 뒤에서 번져요 (카드 그림이 뭉개지지 않게) */
 .gifted .wish-glow {
-  z-index: 2;
+  z-index: 0;
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import StatusBar from '../components/StatusBar'
+import { hapticSuccess, hapticTick } from '../lib/haptic'
 import WishGlow, { type WishGlowHandle } from '../components/WishGlow'
 import { CaretLeftIcon } from '../components/icons'
 import { ShaderFill, useWebGPUDevice } from '../lib/custom-effect-runtime'
@@ -198,6 +199,18 @@ const LIGHT_RAYS = Object.fromEntries(VIBE_ORDER.map((e) => [e, lightRays(e)])) 
 /** 선물 완료에서 카드를 문지를 때 번지는 빛 색 */
 const WISH_COLORS: Record<EnergyType, string> = { water: '#2ec5ff', fire: '#ff3fc0', wood: '#2effb0', metal: '#c6ff2e', earth: '#ff7a2e' }
 
+/** 선물 완료 화면 아래 그라데이션: 기운 색으로 (아래쪽 밝은 색 · 가운데 · 위로 번지는 어두운 색) */
+const GIFT_BG: Record<EnergyType, { hi: string; mid: string; lo: string }> = {
+  water: { hi: '#2aa0dd', mid: '#3a3e98', lo: '#2a2148' },
+  fire: { hi: '#ff74cf', mid: '#7c2a80', lo: '#30183a' },
+  wood: { hi: '#2fdca4', mid: '#1d6066', lo: '#15292c' },
+  metal: { hi: '#bfe84a', mid: '#4b6626', lo: '#202816' },
+  earth: { hi: '#ff7a2c', mid: '#88331f', lo: '#311b16' },
+}
+
+/** 선물 완료 카드 자리 (화면 기준 px) */
+const GIFT_CARD = { x: 56, y: 273.5, w: 288, h: 364 }
+
 /** 필요한 기운 확인 빛: 물 기운 그림을 기운 색 쪽으로 돌려 써요 */
 const GLOW_HUE: Record<EnergyType, number> = { water: 0, fire: 125, wood: -40, metal: -115, earth: 170 }
 
@@ -259,6 +272,7 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
   const rubAcc = useRef(0)
   const glowRef = useRef<WishGlowHandle>(null)
   const giftedRef = useRef<HTMLDivElement>(null)
+  const hapticAcc = useRef(0)
 
   // 기운 생성중 → 잠시 뒤 카드 선택 화면으로
   useEffect(() => {
@@ -599,13 +613,31 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
       const k = el.offsetWidth / r.width || 1
       return { x: (clientX - r.left) * k, y: (clientY - r.top) * k, k }
     }
+    /**
+     * 빛은 카드 뒤에서 번져요 (카드 그림은 그대로 선명하게).
+     * 손가락 쪽 카드 테두리로 빛이 새어 나오도록, 카드 가운데 → 손가락 방향으로 테두리 위에 빛을 찍어요.
+     */
+    const leak = (x: number, y: number, dx: number, dy: number, strength: number) => {
+      const c = GIFT_CARD
+      const cx = c.x + c.w / 2
+      const cy = c.y + c.h / 2
+      let vx = x - cx
+      let vy = y - cy
+      if (Math.hypot(vx, vy) < 1) vx = 1
+      // 가운데에서 손가락 방향으로 쭉 가서 테두리에 닿는 자리
+      const t = Math.min(c.w / 2 / Math.abs(vx || 1e-6), c.h / 2 / Math.abs(vy || 1e-6))
+      vx *= t
+      vy *= t
+      glowRef.current?.splat(cx + vx, cy + vy, dx, dy, strength)
+    }
     const onRubDown = (e: ReactPointerEvent<HTMLDivElement>) => {
       if (rub === 'done') return
       setRub('rub')
       e.currentTarget.setPointerCapture(e.pointerId)
       rubLast.current = { x: e.clientX, y: e.clientY }
       const p = local(e.clientX, e.clientY)
-      glowRef.current?.splat(p.x, p.y, 0, 0, 0.16 + rubAcc.current * 0.2)
+      leak(p.x, p.y, 0, 0, 0.3 + rubAcc.current * 0.3)
+      hapticTick()
     }
     const onRubMove = (e: ReactPointerEvent<HTMLDivElement>) => {
       const last = rubLast.current
@@ -613,7 +645,13 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
       const d = Math.hypot(e.clientX - last.x, e.clientY - last.y)
       const p = local(e.clientX, e.clientY)
       // 문지를수록(진행도) 빛이 진해져요
-      glowRef.current?.splat(p.x, p.y, (e.clientX - last.x) * p.k, (e.clientY - last.y) * p.k, 0.22 + rubAcc.current * 0.35)
+      leak(p.x, p.y, (e.clientX - last.x) * p.k, (e.clientY - last.y) * p.k, 0.3 + rubAcc.current * 0.45)
+      // 문지르는 동안 톡톡 (일정 거리마다)
+      hapticAcc.current += d
+      if (hapticAcc.current > 70) {
+        hapticAcc.current = 0
+        hapticTick()
+      }
       rubLast.current = { x: e.clientX, y: e.clientY }
       const next = Math.min(1, rubAcc.current + d / RUB_GOAL)
       rubAcc.current = next
@@ -622,7 +660,7 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
         rubLast.current = null
         // 다 빌었으면 카드 가운데서 빛이 터지고 참이 나와요
         glowRef.current?.burst(200, 455)
-        navigator.vibrate?.(40)
+        hapticSuccess()
         setRub('done')
       }
     }
@@ -630,10 +668,18 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
       rubLast.current = null
     }
     return (
-      <div ref={giftedRef} className={`freq gifted is-${rub}`} style={{ ['--wish' as string]: wishColor }}>
-        <img className="gifted__glow" src={v2('gift-glow')} alt="" />
-        {/* 문지른 자리에 기운 색 빛이 번져요 (카드 위에 겹쳐서 빛을 받은 것처럼) */}
-        <WishGlow ref={glowRef} color={wishColor} />
+      <div ref={giftedRef} className={`freq gifted is-${rub}`} style={
+          {
+            '--wish': wishColor,
+            '--g-hi': GIFT_BG[energy].hi,
+            '--g-mid': GIFT_BG[energy].mid,
+            '--g-lo': GIFT_BG[energy].lo,
+          } as CSSProperties
+        }
+      >
+        <div className="gifted__glow" aria-hidden />
+        {/* 문지르면 카드 뒤에서 기운 색 빛이 새어 나와요 */}
+        <WishGlow ref={glowRef} color={wishColor} size={60} />
         <StatusBar />
         <h1 className="gifted__title">
           {isMe ? (
