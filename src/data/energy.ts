@@ -70,8 +70,6 @@ export function pickEnergy(text: string, keywords: string[], need?: EnergyType):
 
 export type EnergyCard = {
   type: EnergyType
-  /** 그림·글자 이미지 이름 (assets/frequency/v2/need-{key}.png …). 같은 기운이라도 상황마다 달라요 */
-  key: string
   subtitle: string
   title: string
   /** 키워드 3개 → 위 2개, 아래 1개 */
@@ -80,7 +78,7 @@ export type EnergyCard = {
   color: string
 }
 
-/** 필요한 기운 확인 화면 내용. 피그마 '필요한 기운 확인' (물부처의 기운) 기준 */
+/** 필요한 기운 확인 화면 내용. 피그마 '필요한 기운 확인' (물부처의 기운) 기준 — 기운마다 ○부처의 기운 */
 export function energyCard(type: EnergyType, text: string): EnergyCard {
   const aboutContact = /전남친|전여친|재회|연락/.test(text)
   switch (type) {
@@ -88,7 +86,6 @@ export function energyCard(type: EnergyType, text: string): EnergyCard {
       return aboutContact
         ? {
             type,
-            key: 'water-contact',
             subtitle: '활활 타오르는\n연락 충동을 잠재워 주는',
             title: '물부처의 기운',
             tags: ['# 물의 기운', '# 새로운 인연의 기운', '# 연락충동에 찬물을 얹는'],
@@ -96,45 +93,40 @@ export function energyCard(type: EnergyType, text: string): EnergyCard {
           }
         : {
             type,
-            key: 'water',
             subtitle: '뜨거워진 마음을\n차분하게 식혀 주는',
-            title: '물의 기운',
+            title: '물부처의 기운',
             tags: ['# 물의 기운', '# 마음 진정', '# 생각을 비우는'],
             color: '#91e2ff',
           }
     case 'fire':
       return {
         type,
-        key: 'fire',
         subtitle: '움츠러든 마음에\n불씨를 지펴 주는',
-        title: '불의 기운',
+        title: '불부처의 기운',
         tags: ['# 불의 기운', '# 자신감 충전', '# 용기 한 스푼'],
         color: '#ffa1f7',
       }
     case 'wood':
       return {
         type,
-        key: 'wood',
         subtitle: '새로운 시작에\n싹을 틔워 주는',
-        title: '나무의 기운',
+        title: '나무부처의 기운',
         tags: ['# 나무의 기운', '# 새로운 시작', '# 기분 전환'],
         color: '#8fffd9',
       }
     case 'metal':
       return {
         type,
-        key: 'metal',
         subtitle: '흩어진 운을\n단단하게 모아 주는',
-        title: '금의 기운',
+        title: '금부처의 기운',
         tags: ['# 금의 기운', '# 합격 기운', '# 행운 모으기'],
         color: '#dcfc8f',
       }
     case 'earth':
       return {
         type,
-        key: 'earth',
         subtitle: '지친 몸과 마음을\n포근하게 감싸 주는',
-        title: '흙의 기운',
+        title: '흙부처의 기운',
         tags: ['# 흙의 기운', '# 꿀잠 자기', '# 푹 쉬기'],
         color: '#ffaa80',
       }

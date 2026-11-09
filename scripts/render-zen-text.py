@@ -29,13 +29,12 @@ ITEMS = [
     ('vibe-earth', 'Earth Vibe', VIBE),
     ('vibe-metal', 'Metal Vibe', VIBE),
     ('lucky-signal', 'Lucky signal', 'width:280px;height:47px;font-size:36px;letter-spacing:-0.72px;color:#fff;text-align:center'),
-    # 필요한 기운 확인 화면 제목 (src/data/energy.ts 의 key / title 과 맞춰요)
-    ('need-title-water-contact', '물부처의 기운', TITLE),
-    ('need-title-water', '물의 기운', TITLE),
-    ('need-title-fire', '불의 기운', TITLE),
-    ('need-title-wood', '나무의 기운', TITLE),
-    ('need-title-metal', '금의 기운', TITLE),
-    ('need-title-earth', '흙의 기운', TITLE),
+    # 필요한 기운 확인 화면 제목 (src/data/energy.ts 의 title 과 맞춰요: need-title-<기운>)
+    ('need-title-water', '물부처의 기운', TITLE),
+    ('need-title-fire', '불부처의 기운', TITLE),
+    ('need-title-wood', '나무부처의 기운', TITLE),
+    ('need-title-metal', '금부처의 기운', TITLE),
+    ('need-title-earth', '흙부처의 기운', TITLE),
 ]
 
 

@@ -13,6 +13,7 @@ import avatarNahyun from '../assets/frequency/avatar-nahyun.jpg'
 import avatarYujin from '../assets/frequency/avatar-yujin.jpg'
 import avatarSumin from '../assets/friends/avatar-sumin.jpg'
 import { ENERGY_META, energyCard, pickEnergy, suggestKeywords, type EnergyType } from '../data/energy'
+import glowVideo from '../assets/frequency/v2/need-glow.mp4'
 import './Frequency.css'
 
 /**
@@ -74,6 +75,21 @@ const FRIENDS: Friend[] = [
   { id: 'kwon', name: 'Kwon', honorName: '민재', need: 'earth', avatarBg: '#8ec2ff', layers: [] },
   { id: 'ssu', name: 'SSU', honorName: '수진', need: 'earth', avatarBg: '#d1d7de', layers: [{ src: avatarSsu }] },
 ]
+
+/**
+ * iOS Safari는 muted 속성이 DOM에 직접 있어야 자동 재생돼요 (React는 muted를 속성으로 안 넣어요).
+ * 움직임 줄이기 설정이면 멈춘 첫 장면만 보여요.
+ */
+const playMuted = (el: HTMLVideoElement | null) => {
+  if (!el) return
+  el.muted = true
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.removeAttribute('autoplay')
+    el.pause()
+    return
+  }
+  void el.play().catch(() => {})
+}
 
 /** 'sumin' → 'Sumin' (피그마 제목 표기) */
 const titleName = (name: string) => name.charAt(0).toUpperCase() + name.slice(1)
@@ -423,16 +439,24 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
 
   if (step === 'result' && target) {
     const card = energyCard(energy, text)
-    const withBuddha = card.key === 'water-contact'
-    const titleImg = v2(`need-title-${card.key}`)
+    const titleImg = v2(`need-title-${energy}`)
+    const hue = GLOW_HUE[energy] ? `hue-rotate(${GLOW_HUE[energy]}deg)` : undefined
     return (
       <div className="freq need">
         <StatusBar />
-        <img
+        {/* 뒤에서 일렁이는 빛: 피그마 영상(물 기운)을 기운 색으로 돌려서 써요. 앞뒤로 이어 붙여 끊김 없이 반복 */}
+        <video
+          ref={playMuted}
           className="need__glow"
-          src={v2(withBuddha ? 'need-glow-buddha' : 'need-glow')}
-          alt=""
-          style={{ filter: GLOW_HUE[energy] ? `hue-rotate(${GLOW_HUE[energy]}deg)` : undefined }}
+          src={glowVideo}
+          poster={v2('need-glow-poster')}
+          autoPlay
+          muted
+          loop
+          playsInline
+          disablePictureInPicture
+          aria-hidden
+          style={{ filter: hue }}
         />
         <header className="freq__gnb">
           <BackButton onClick={() => onStepChange('compose')} />
@@ -444,8 +468,8 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
         </h1>
         <p className="need__sub">{card.subtitle}</p>
         {titleImg ? <img className="need__name" src={titleImg} alt={card.title} /> : <p className="need__name need__name--text">{card.title}</p>}
-        {/* 물부처 그림은 빛 배경에 함께 들어 있어요. 다른 기운은 그 기운의 참을 보여줘요 */}
-        {!withBuddha && <img className="need__charm" src={charmSrc(energy)} alt="" />}
+        {/* 부처: 둥실둥실 떠 있어요 */}
+        <img className="need__buddha" src={v2('need-buddha')} alt="" draggable={false} />
         <div className="need__tags">
           <p>
             <span>{card.tags[0]}</span>

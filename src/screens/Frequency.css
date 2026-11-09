@@ -561,31 +561,23 @@
   background: #020204;
 }
 
-/* 뒤쪽 큰 빛 (물 기운 그림을 기운 색으로 돌려서 써요). 숨쉬듯 천천히 */
+/* 뒤쪽에서 일렁이는 빛 영상 (441 × 596, 피그마 빛 자리에 맞춰 놓았어요. 영상 가장자리는 배경과 같은 검정이에요) */
 .need__glow {
   position: absolute;
-  left: 0;
-  top: 224px;
-  width: 402px;
-  height: 556px;
+  left: -19px;
+  top: 168px;
+  width: 441px;
+  height: 596px;
   max-width: none;
+  object-fit: fill;
   pointer-events: none;
-  animation:
-    need-glow-in 0.8s ease-out both,
-    need-breathe 4s ease-in-out 0.8s infinite;
+  animation: need-glow-in 0.8s ease-out both;
 }
 
 @keyframes need-glow-in {
   from {
     opacity: 0;
     transform: scale(0.92);
-  }
-}
-
-@keyframes need-breathe {
-  50% {
-    transform: scale(1.015);
-    opacity: 0.92;
   }
 }
 
@@ -627,14 +619,33 @@
   white-space: nowrap;
 }
 
-.need__charm {
+/* 부처: 피그마 102 × 165 자리에서 둥실둥실 */
+.need__buddha {
   position: absolute;
-  left: 131px;
-  top: 478px;
-  width: 140px;
-  height: 140px;
-  object-fit: contain;
-  animation: charm-float 3.4s ease-in-out infinite;
+  left: 150px;
+  top: 473px;
+  width: 102px;
+  height: 165px;
+  pointer-events: none;
+  animation:
+    need-glow-in 0.8s ease-out both,
+    buddha-float 3.6s ease-in-out 0.8s infinite;
+}
+
+@keyframes buddha-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-9px) rotate(-1.2deg);
+  }
+  50% {
+    transform: translateY(-11px) rotate(0deg);
+  }
+  70% {
+    transform: translateY(-9px) rotate(1.2deg);
+  }
 }
 
 @keyframes charm-float {
@@ -1103,7 +1114,7 @@
 @media (prefers-reduced-motion: reduce) {
   .compose__card::before,
   .need__glow,
-  .need__charm,
+  .need__buddha,
   .loading__fallback,
   .gift__card,
   .freq--gift .freq__gnb-title,
