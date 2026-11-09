@@ -30,19 +30,6 @@ type Props = {
 
 type SheetKey = SectionKey | 'pillars'
 
-/** 테두리가 두꺼운 스티커 글씨 (피그마: 검은 글자 + 두꺼운 색 테두리) */
-function OutlineText({ lines, className = '', style }: { lines: string[]; className?: string; style?: CSSProperties }) {
-  return (
-    <span className={`outline-text ${className}`} style={style}>
-      {lines.map((line) => (
-        <span key={line} className="outline-text__line" data-text={line}>
-          {line}
-        </span>
-      ))}
-    </span>
-  )
-}
-
 /** **굵게** 표시를 진한 글씨로 */
 function Rich({ text }: { text: string }) {
   return (
@@ -72,12 +59,14 @@ const radial = (transform: string, stops: [string, number][], opacity = 1) =>
  * 6개 박스 모양 (피그마 '나의 캐해 리포트' 그대로): 그라데이션 · 안쪽 빛 · 하얀 아크릴 참
  * 참 위치는 177 × 177 박스 기준. blend: 피그마처럼 박스 색이 비치게 (hard-light)
  */
-const BOX_LOOKS: Record<SectionKey, { bg: string; inset: string; charm: string; blend: boolean; style: CSSProperties }> = {
+const BOX_LOOKS: Record<SectionKey, { bg: string; inset: string; charm: string; blend: boolean; style: CSSProperties; hue: number; accent: string }> = {
   elements: {
     bg: radial('matrix(-0.0000012985 12.25 -8.8 -9.3262e-7 88 82.5)', [['#d7009a', 0.048], ['#e10ea5', 0.167], ['#eb1cb1', 0.286], ['#ff39c7', 0.524], ['#ff64ab', 0.762], ['#ff9090', 1]]),
     inset: 'inset 0 0 12px rgba(255, 255, 255, 0.25), inset 0 0 28px rgba(255, 188, 189, 0.95)',
     charm: charmFire,
     blend: true,
+    hue: 317,
+    accent: '#ffa1f7',
     style: { left: 47, top: 43, width: 83.975, height: 92.7 },
   },
   personality: {
@@ -88,6 +77,8 @@ const BOX_LOOKS: Record<SectionKey, { bg: string; inset: string; charm: string; 
     inset: 'inset 0 0 24px rgba(226, 217, 255, 0.5)',
     charm: charmWater,
     blend: true,
+    hue: 278,
+    accent: '#e3a6ff',
     style: { left: 48, top: 48, width: 81.9, height: 81.9, opacity: 0.9 },
   },
   guide: {
@@ -99,6 +90,8 @@ const BOX_LOOKS: Record<SectionKey, { bg: string; inset: string; charm: string; 
     // 물방울 참은 피그마 화면에서 박스 색이 비친 채로 잘라 왔어요
     charm: charmDrop,
     blend: false,
+    hue: 229,
+    accent: '#9ec5ff',
     style: { left: 42, top: 43, width: 92.7, height: 92.7 },
   },
   caution: {
@@ -108,6 +101,8 @@ const BOX_LOOKS: Record<SectionKey, { bg: string; inset: string; charm: string; 
     inset: 'inset 0 0 1px rgba(255, 255, 255, 0.25), inset 0 0 28px rgba(206, 213, 255, 0.95)',
     charm: charmWood,
     blend: true,
+    hue: 172,
+    accent: '#8fffd9',
     style: { left: 47, top: 47, width: 83.7, height: 83.7 },
   },
   relationships: {
@@ -115,6 +110,8 @@ const BOX_LOOKS: Record<SectionKey, { bg: string; inset: string; charm: string; 
     inset: 'inset 0 0 28px rgba(255, 237, 189, 0.68)',
     charm: charmEarth,
     blend: true,
+    hue: 8,
+    accent: '#ffb08a',
     style: { left: 45, top: 33, width: 87.3, height: 87.3, opacity: 0.9 },
   },
   lucky: {
@@ -122,6 +119,8 @@ const BOX_LOOKS: Record<SectionKey, { bg: string; inset: string; charm: string; 
     inset: 'inset 0 0 12px rgba(255, 255, 255, 0.25), inset 0 0 28px rgba(204, 255, 241, 0.95)',
     charm: charmMetal,
     blend: true,
+    hue: 102,
+    accent: '#dcfc8f',
     style: { left: 46.7, top: 37.7, width: 84.2, height: 84.2, rotate: '-11.71deg' },
   },
 }
@@ -141,6 +140,8 @@ export default function CharReport({ me, onBack, onStart, onReset, theme, settin
     setActive(key)
   }
   const section = report.sections.find((s) => s.key === shown)
+  // 만세력은 나의 오행에서 열려서 같은 색으로
+  const sheetLook = BOX_LOOKS[shown === 'pillars' ? 'elements' : shown]
 
   const chips = [
     `${profile.calendar === 'lunar' ? `음력${profile.leap ? '(윤)' : ''} ` : ''}${dotted(profile.birthDate)}`,
@@ -149,6 +150,11 @@ export default function CharReport({ me, onBack, onStart, onReset, theme, settin
   ]
 
   const coreVars = {
+    // 상세 시트: 박스 색을 아주 어둡게 깔고, 해시태그는 박스 색의 밝은 쪽으로
+    '--d-top': `hsl(${sheetLook.hue} 97% 15%)`,
+    '--d-bottom': `hsl(${sheetLook.hue} 95% 7.5%)`,
+    '--d-tag-bg': `hsl(${sheetLook.hue} 100% 4%)`,
+    '--d-accent': sheetLook.accent,
     '--core': core.strong,
     '--core-soft': core.soft,
     '--core-tint': core.tint,
@@ -222,21 +228,21 @@ export default function CharReport({ me, onBack, onStart, onReset, theme, settin
       <BottomSheet
         open={active !== null}
         onClose={() => setActive(null)}
-        tone="light"
+        tone="dark"
         label={shown === 'pillars' ? '만세력' : (section?.ko ?? '')}
         className="detail-sheet"
-        overhang={
-          <>
-            <h2 className="detail__title">
-              <OutlineText lines={shown === 'pillars' ? ['Four', 'Pillars'] : (section?.title ?? [])} className="outline-text--sheet" />
-            </h2>
+        header={
+          <div className="detail__grab">
             <button className="detail__close" onClick={() => setActive(null)} aria-label="닫기">
               <CloseIcon size={18} />
             </button>
-          </>
+          </div>
         }
       >
         <div className="detail" key={shown}>
+          {/* 박스 이름 + 박스 속 참 (피그마 '나의 오행' 상세) */}
+          <h2 className="detail__title">{shown === 'pillars' ? '만세력' : section?.ko}</h2>
+          <img className={`detail__charm${sheetLook.blend ? ' is-blend' : ''}`} src={sheetLook.charm} alt="" draggable={false} />
           {shown === 'pillars' ? <PillarsDetail me={me} settings={settings} /> : section && <SectionDetail section={section} report={report} saju={saju} onPillars={() => open('pillars')} />}
         </div>
       </BottomSheet>

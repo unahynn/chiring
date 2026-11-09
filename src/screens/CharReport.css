@@ -170,30 +170,15 @@
   }
 }
 
-/* 하얀 아크릴 참: 박스 색이 비쳐 보이게 (피그마 hard-light) + 살짝 떠 있어요 */
+/* 하얀 아크릴 참: 박스 색이 비쳐 보이게 (피그마 hard-light) */
 .report-box__charm {
   position: absolute;
   object-fit: contain;
   pointer-events: none;
-  animation: charm-bob 3.6s ease-in-out infinite;
 }
 
 .report-box__charm.is-blend {
   mix-blend-mode: hard-light;
-}
-
-.report-box:nth-child(2n) .report-box__charm {
-  animation-delay: -1.2s;
-}
-
-.report-box:nth-child(3n) .report-box__charm {
-  animation-delay: -2.4s;
-}
-
-@keyframes charm-bob {
-  50% {
-    translate: 0 -5px;
-  }
 }
 
 .report-box__ko {
@@ -215,85 +200,50 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .report-box__charm,
   .report__en,
   .report__type {
     animation: none;
   }
 }
 
-/* ---------- 스티커 글씨 (검은 글자 + 두꺼운 테두리) ---------- */
-.outline-text {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  isolation: isolate;
-  color: #000;
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  /* 피그마의 아주 좁은 굵은 영문 글꼴 느낌: Pretendard Black을 옆으로 눌러요 */
-  transform: scaleX(0.74);
+/* =================== 상세 시트 (피그마 '나의 오행' 상세) =================== */
+/* 박스 색을 아주 어둡게 깐 시트. 색은 CharReport.tsx 에서 --d-top · --d-bottom · --d-tag-bg · --d-accent 로 */
+.detail-sheet.sheet {
+  height: calc(100% - 68px);
+  background: linear-gradient(var(--d-top), var(--d-bottom) 92%);
+  color: #fff;
+  box-shadow: none;
 }
 
-.outline-text__line {
-  position: relative;
-  white-space: nowrap;
-}
-
-.outline-text__line::before {
-  content: attr(data-text);
+/* 위쪽을 잡고 끌어내리면 닫혀요 (닫기 버튼은 늘 오른쪽 위에) */
+.detail-sheet .sheet__header {
   position: absolute;
-  inset: 0;
-  z-index: -1;
-  color: var(--stroke);
-  -webkit-text-stroke: var(--stroke-w) var(--stroke);
+  z-index: 3;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 44px;
 }
 
-/* =================== 상세 시트 =================== */
-.detail-sheet {
-  height: calc(100% - 225px);
-}
-
-/* 스크롤하면 글이 큰 제목 아래로 자연스럽게 사라져요 (둥근 모서리 밖으로도 안 비치게) */
 .detail-sheet .sheet__body {
   border-radius: 60px 60px 0 0;
-  mask-image: linear-gradient(to bottom, transparent 44px, #000 76px);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 44px, #000 76px);
-}
-
-.detail-sheet .sheet__overhang {
-  bottom: calc(100% - 46px);
-  z-index: 2;
-  text-align: center;
-}
-
-.detail__title {
-  display: inline-block;
-}
-
-.outline-text--sheet {
-  --stroke: #fff;
-  --stroke-w: 28px;
-  font-size: 67px;
-  line-height: 0.82;
-  letter-spacing: -0.055em;
 }
 
 .detail__close {
   position: absolute;
-  right: 20px;
-  bottom: 70px;
-  width: 34px;
-  height: 34px;
+  right: 29px;
+  top: 27px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: #e2e2e2;
+  background: rgba(255, 255, 255, 0.8);
   color: #000;
 }
 
 .detail {
-  padding: 72px 20px 64px;
+  padding: 49px 20px 64px;
   animation: detail-in 0.4s ease 0.1s backwards;
 }
 
@@ -304,65 +254,83 @@
   }
 }
 
+.detail__title {
+  text-align: center;
+  font-family: 'ZEN SERIF', 'Pretendard', serif;
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+}
+
+/* 박스 속 참 (가만히 있어요) */
+.detail__charm {
+  display: block;
+  width: 80px;
+  height: 80px;
+  margin: 12px auto 0;
+  object-fit: contain;
+}
+
+.detail__charm.is-blend {
+  mix-blend-mode: hard-light;
+}
+
 .detail__tags {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px 14px;
+  gap: 8px;
+  margin-top: 28px;
   list-style: none;
 }
 
 .detail__tags li {
-  height: 33px;
-  padding: 0 15px;
+  height: 40px;
+  padding: 0 17px;
   display: grid;
   place-items: center;
-  border-radius: 17px;
-  background: #0e0e0e;
-  color: var(--core-soft);
-  font-size: 16px;
+  border-radius: 20px;
+  background: var(--d-tag-bg);
+  color: var(--d-accent);
+  font-size: 17px;
   font-weight: 700;
-  letter-spacing: -0.32px;
+  letter-spacing: -0.34px;
 }
 
 .detail__block {
-  margin-top: 36px;
+  margin-top: 52px;
 }
 
 .detail__block + .detail__block {
-  margin-top: 34px;
+  margin-top: 44px;
 }
 
 .detail__block h3 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-left: -3px;
-  font-size: 25px;
-  font-weight: 700;
-  line-height: 1.26;
-  letter-spacing: -0.6px;
-  color: #000;
-}
-
-/* 형광펜: 줄마다 글자 길이만큼 */
-.detail__block h3 span {
-  padding: 0 5px 0 3px;
-  background: var(--core-tint);
+  font-family: 'ZEN SERIF', 'Pretendard', serif;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.18;
+  letter-spacing: -0.52px;
+  color: #fff;
+  word-break: keep-all;
 }
 
 .detail__body {
-  margin-top: 18px;
+  margin-top: 17px;
   font-size: 16px;
-  line-height: 27px;
+  line-height: 25.8px;
   letter-spacing: -0.4px;
-  color: #68717d;
+  color: #c3c6cb;
   word-break: keep-all;
 }
 
 .detail__body strong {
-  font-weight: 700;
-  color: #383c43;
+  font-weight: 500;
+  color: #fff;
 }
 
 /* ---------- 나의 오행 막대 ---------- */
@@ -370,19 +338,19 @@
   margin-top: 30px;
   padding: 20px 18px 18px;
   border-radius: 24px;
-  background: #f6f6f8;
+  background: rgba(0, 0, 0, 0.28);
 }
 
 .elements__me {
   font-size: 14px;
-  color: #68717d;
+  color: #c3c6cb;
   letter-spacing: -0.28px;
 }
 
 .elements__me strong {
   margin: 0 2px;
   font-size: 17px;
-  color: #000;
+  color: #fff;
 }
 
 .elements__bars {
@@ -402,18 +370,18 @@
 .elements__name {
   font-size: 15px;
   font-weight: 600;
-  color: #383c43;
+  color: #c3c6cb;
 }
 
 .elements__bars li.is-core .elements__name {
-  color: #000;
+  color: #fff;
   font-weight: 700;
 }
 
 .elements__track {
   height: 14px;
   border-radius: 7px;
-  background: #e6e7eb;
+  background: rgba(255, 255, 255, 0.12);
   overflow: hidden;
 }
 
@@ -445,13 +413,13 @@
   font-size: 15px;
   font-weight: 600;
   letter-spacing: -0.3px;
-  color: #68717d;
+  color: #c3c6cb;
 }
 
 .elements__note {
   margin-top: 12px;
   font-size: 13px;
-  color: #8a929c;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* ---------- 행운 포인트 ---------- */
@@ -516,7 +484,7 @@
   flex-direction: column;
   justify-content: space-between;
   border-radius: 32px;
-  background: #0e0e0e;
+  background: rgba(0, 0, 0, 0.35);
   color: #fff;
 }
 
@@ -561,7 +529,7 @@
 
 .lucky__routine {
   padding: 20px 22px 22px;
-  border: 2px solid #0e0e0e;
+  border: 2px solid rgba(255, 255, 255, 0.18);
   border-radius: 32px;
 }
 
@@ -570,13 +538,13 @@
   font-size: 17px;
   line-height: 1.55;
   letter-spacing: -0.34px;
-  color: #383c43;
+  color: #c3c6cb;
   word-break: keep-all;
 }
 
 .lucky__routine strong {
   font-weight: 700;
-  color: #000;
+  color: #fff;
   background: linear-gradient(transparent 58%, color-mix(in srgb, var(--lucky) 40%, transparent) 58%);
 }
 
@@ -598,18 +566,18 @@
 }
 
 .pillars__col.is-me {
-  background: #f6f6f8;
+  background: rgba(0, 0, 0, 0.28);
 }
 
 .pillars__head {
   font-size: 14px;
   font-weight: 700;
-  color: #383c43;
+  color: #fff;
 }
 
 .pillars__god {
   font-size: 12px;
-  color: #68717d;
+  color: #c3c6cb;
 }
 
 .pillars__cell {
@@ -635,8 +603,8 @@
 }
 
 .pillars__cell.is-empty {
-  background: #ececef;
-  color: #a5abb3;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.45);
   font-size: 22px;
   font-weight: 700;
 }
@@ -650,7 +618,7 @@
   list-style: none;
   font-size: 14px;
   font-weight: 600;
-  color: #383c43;
+  color: #c3c6cb;
 }
 
 .pillars__counts li {
@@ -669,7 +637,7 @@
   margin-top: 22px;
   font-size: 13px;
   line-height: 1.6;
-  color: #8a929c;
+  color: rgba(255, 255, 255, 0.5);
   word-break: keep-all;
   text-align: center;
 }

@@ -30,3 +30,16 @@
   font-display: swap;
   src: url('../node_modules/pretendard/dist/web/static/woff2-subset/Pretendard-Black.subset.woff2') format('woff2');
 }
+
+/*
+ * ZEN SERIF (OA Entertainment): 상세 화면 제목·소제목처럼 내용이 바뀌는 글자에 써요.
+ * 라이선스: 웹사이트 탑재는 사용 가능, 단 폰트 파일 수정·형식 변환·재배포·판매는 금지.
+ * 그래서 받은 원본 OTF를 그대로 두고 쓰고, woff2 등으로 바꾸지 않아요.
+ * 글자가 고정인 곳(Me, Lucky signal …)은 예전처럼 글자 이미지예요.
+ */
+@font-face {
+  font-family: 'ZEN SERIF';
+  font-weight: 400;
+  font-display: swap;
+  src: url('./assets/fonts/ZEN-SERIF-Regular.otf') format('opentype');
+}
