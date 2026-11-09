@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import StatusBar from '../components/StatusBar'
+import WishGlow, { type WishGlowHandle } from '../components/WishGlow'
 import { CaretLeftIcon } from '../components/icons'
 import { ShaderFill, useWebGPUDevice } from '../lib/custom-effect-runtime'
 import {
@@ -194,6 +195,9 @@ const lightRays = (energy: EnergyType) => {
 /** 기운별 셰이더 (한 번만 만들어서 화면이 다시 그려져도 같은 셰이더를 써요) */
 const LIGHT_RAYS = Object.fromEntries(VIBE_ORDER.map((e) => [e, lightRays(e)])) as Record<EnergyType, ReturnType<typeof lightRays>>
 
+/** 선물 완료에서 카드를 문지를 때 번지는 빛 색 */
+const WISH_COLORS: Record<EnergyType, string> = { water: '#2ec5ff', fire: '#ff3fc0', wood: '#2effb0', metal: '#c6ff2e', earth: '#ff7a2e' }
+
 /** 필요한 기운 확인 빛: 물 기운 그림을 기운 색 쪽으로 돌려 써요 */
 const GLOW_HUE: Record<EnergyType, number> = { water: 0, fire: 125, wood: -40, metal: -115, earth: 170 }
 
@@ -253,6 +257,8 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
   const [rubProgress, setRubProgress] = useState(0)
   const rubLast = useRef<{ x: number; y: number } | null>(null)
   const rubAcc = useRef(0)
+  const glowRef = useRef<WishGlowHandle>(null)
+  const giftedRef = useRef<HTMLDivElement>(null)
 
   // 기운 생성중 → 잠시 뒤 카드 선택 화면으로
   useEffect(() => {
@@ -582,23 +588,41 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
   if (step === 'gifted' && target) {
     const card = signalCards(energy)[cardIndex]
     // 카드 위를 문지른 거리만큼 차올라요. 다 차면 참으로 바뀌어요.
-    const RUB_GOAL = 900
+    const RUB_GOAL = 1600
+    // 문지르는 빛: 기운 색 중 진한 쪽 (연한 색은 겹치면 하얗게 바래요)
+    const wishColor = WISH_COLORS[energy]
+    /** 화면(.gifted) 기준 좌표로: PC 미리보기처럼 화면이 줄어 보여도 손가락 자리에 빛이 나게 */
+    const local = (clientX: number, clientY: number) => {
+      const el = giftedRef.current
+      if (!el) return { x: 0, y: 0, k: 1 }
+      const r = el.getBoundingClientRect()
+      const k = el.offsetWidth / r.width || 1
+      return { x: (clientX - r.left) * k, y: (clientY - r.top) * k, k }
+    }
     const onRubDown = (e: ReactPointerEvent<HTMLDivElement>) => {
       if (rub === 'done') return
       setRub('rub')
       e.currentTarget.setPointerCapture(e.pointerId)
       rubLast.current = { x: e.clientX, y: e.clientY }
+      const p = local(e.clientX, e.clientY)
+      glowRef.current?.splat(p.x, p.y, 0, 0, 0.16 + rubAcc.current * 0.2)
     }
     const onRubMove = (e: ReactPointerEvent<HTMLDivElement>) => {
       const last = rubLast.current
       if (!last || rub === 'done') return
       const d = Math.hypot(e.clientX - last.x, e.clientY - last.y)
+      const p = local(e.clientX, e.clientY)
+      // 문지를수록(진행도) 빛이 진해져요
+      glowRef.current?.splat(p.x, p.y, (e.clientX - last.x) * p.k, (e.clientY - last.y) * p.k, 0.22 + rubAcc.current * 0.35)
       rubLast.current = { x: e.clientX, y: e.clientY }
       const next = Math.min(1, rubAcc.current + d / RUB_GOAL)
       rubAcc.current = next
       setRubProgress(next)
       if (next >= 1) {
         rubLast.current = null
+        // 다 빌었으면 카드 가운데서 빛이 터지고 참이 나와요
+        glowRef.current?.burst(200, 455)
+        navigator.vibrate?.(40)
         setRub('done')
       }
     }
@@ -606,8 +630,10 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
       rubLast.current = null
     }
     return (
-      <div className={`freq gifted is-${rub}`}>
+      <div ref={giftedRef} className={`freq gifted is-${rub}`} style={{ ['--wish' as string]: wishColor }}>
         <img className="gifted__glow" src={v2('gift-glow')} alt="" />
+        {/* 문지른 자리에 기운 색 빛이 번져요 (카드 위에 겹쳐서 빛을 받은 것처럼) */}
+        <WishGlow ref={glowRef} color={wishColor} />
         <StatusBar />
         <h1 className="gifted__title">
           {isMe ? (
@@ -641,7 +667,16 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire' }: Pr
         {/* 처음 들어오면 화면을 어둡게 하고 문지르는 손을 보여줘요. 아무 데나 누르면 사라져요 */}
         {rub === 'guide' && <div className="gifted__dim" onPointerDown={() => setRub('rub')} />}
         {rub === 'guide' && <img className="gifted__hand" src={v2('hand-rub')} alt="" />}
-        {rub !== 'done' && <p className="gifted__hint">마음을 담아 카드를 문질러주세요</p>}
+        {rub === 'guide' && <p className="gifted__hint">마음을 담아 카드를 문질러주세요</p>}
+        {/* 문지르는 동안: 잘되길 비는 마음이 차올라요 */}
+        {rub === 'rub' && (
+          <div className="gifted__wish" aria-live="polite">
+            <p>{isMe ? '나에게 좋은 기운을 모으는 중' : `${target.name}님이 잘되길 비는 중`}</p>
+            <span className="gifted__wish-bar">
+              <i style={{ width: `${Math.round(rubProgress * 100)}%` }} />
+            </span>
+          </div>
+        )}
 
         {rub === 'done' && (
           <button
