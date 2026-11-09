@@ -186,20 +186,6 @@
   word-break: keep-all;
 }
 
-/* 재생 중엔 카드 둘레가 기운 색으로 숨 쉬듯 빛나요 (뒤집기 3D가 깨지지 않게 바깥 상자에) */
-.replay-card__lift.is-playing {
-  animation: replay-breathe 2.4s ease-in-out infinite;
-}
-
-@keyframes replay-breathe {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--b-edge) 30%, transparent));
-  }
-  50% {
-    filter: drop-shadow(0 0 22px color-mix(in srgb, var(--b-edge) 70%, transparent));
-  }
-}
 
 .replay-card__hint {
   position: absolute;
@@ -220,8 +206,403 @@
   .replay-card__flip {
     transition-duration: 0.01s;
   }
-  .replay-card__lift.is-playing,
   .replay__grid li {
+    animation: none;
+  }
+}
+
+/* ---------- 주파수 듣는 화면 ---------- */
+.lp {
+  background: #5fd3ff;
+}
+
+/* 부처 가운데 (그림 속 좌표) */
+.lp {
+  --cx: 204.5px;
+  --cy: 455px;
+}
+
+.lp__scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 그림과 부처 빛은 부처 가운데를 기준으로 함께 숨 쉬어요 (빛 자리가 어긋나지 않게) */
+.lp__bg,
+.lp__aura,
+.lp__chakra,
+.lp__rise {
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.lp__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: var(--cx) var(--cy);
+  animation-name: lp-breathe;
+  animation-duration: 7s;
+}
+
+@keyframes lp-breathe {
+  50% {
+    transform: scale(1.025);
+  }
+}
+
+/* 배경 빛 덩어리: 크게 흐리게, 서로 다른 속도로 천천히 흘러가며 모양이 풀려요 (부처 자리는 비워 둬요) */
+.lp__flow {
+  position: absolute;
+  inset: 0;
+  mask-image: radial-gradient(150px 200px at var(--cx) 470px, transparent 45%, #000 95%);
+}
+
+.lp__blob {
+  position: absolute;
+  border-radius: 46% 54% 58% 42% / 52% 44% 56% 48%;
+  filter: blur(38px);
+  opacity: 0.55;
+  animation: lp-flow 16s ease-in-out infinite alternate;
+}
+
+.lp__blob--a {
+  left: 210px;
+  top: 170px;
+  width: 300px;
+  height: 280px;
+  background: radial-gradient(closest-side, #0020ff, rgba(0, 40, 255, 0.4) 70%, transparent);
+}
+
+.lp__blob--b {
+  left: -120px;
+  top: 360px;
+  width: 300px;
+  height: 320px;
+  background: radial-gradient(closest-side, #00f6ff, rgba(0, 246, 255, 0.4) 70%, transparent);
+  animation-duration: 13s;
+  animation-delay: -5s;
+}
+
+.lp__blob--c {
+  left: -40px;
+  top: 220px;
+  width: 230px;
+  height: 230px;
+  background: radial-gradient(closest-side, #e6ffff, rgba(230, 255, 255, 0.4) 70%, transparent);
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+
+.lp__blob--d {
+  left: 230px;
+  top: 520px;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(closest-side, #00e8ff, rgba(0, 232, 255, 0.35) 70%, transparent);
+  animation-duration: 19s;
+  animation-delay: -9s;
+}
+
+@keyframes lp-flow {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    border-radius: 46% 54% 58% 42% / 52% 44% 56% 48%;
+  }
+  50% {
+    transform: translate(-38px, 30px) rotate(40deg) scale(1.18);
+    border-radius: 58% 42% 40% 60% / 42% 58% 44% 56%;
+  }
+  100% {
+    transform: translate(26px, -34px) rotate(-30deg) scale(0.9);
+    border-radius: 40% 60% 52% 48% / 60% 40% 60% 40%;
+  }
+}
+
+/* 빛 물결: 부처 가운데서 동그랗게 울리며 퍼져 나가요 */
+.lp__ripples i {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: 340px;
+  height: 340px;
+  margin: -170px 0 0 -170px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 50%,
+    rgba(255, 255, 255, 0.5) 61%,
+    rgba(190, 255, 255, 0.22) 68%,
+    transparent 75%
+  );
+  filter: blur(3px);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: lp-ripple 6s linear infinite;
+}
+
+.lp__ripples i:nth-child(2) {
+  animation-delay: -2s;
+}
+
+.lp__ripples i:nth-child(3) {
+  animation-delay: -4s;
+}
+
+@keyframes lp-ripple {
+  0% {
+    transform: scale(0.25);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* 부처 둘레 빛: 웅웅 커졌다 작아졌다 */
+.lp__aura {
+  position: absolute;
+  left: var(--cx);
+  top: var(--cy);
+  width: 300px;
+  height: 360px;
+  margin: -180px 0 0 -150px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(190, 255, 255, 0.32), rgba(0, 210, 255, 0.14) 50%, transparent);
+  mix-blend-mode: screen;
+  animation-name: lp-hum;
+  animation-duration: 2.6s;
+}
+
+@keyframes lp-hum {
+  0%,
+  100% {
+    transform: scale(0.94);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.75;
+  }
+}
+
+/* 몸의 빛 6개: 차례로 웅웅 빛나요 */
+.lp__chakra {
+  position: absolute;
+  left: var(--cx);
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0 10%, var(--c) 26%, transparent 68%);
+  mix-blend-mode: screen;
+  animation-name: lp-chakra;
+  animation-duration: 1.8s;
+}
+
+@keyframes lp-chakra {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.85;
+  }
+}
+
+/* 아래(542)에서 정수리(354)로 올라가는 빛 */
+.lp__rise {
+  position: absolute;
+  left: var(--cx);
+  top: 542px;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0 18%, rgba(170, 255, 255, 0.55) 42%, transparent 70%);
+  mix-blend-mode: screen;
+  animation-name: lp-rise;
+  animation-duration: 3.2s;
+}
+
+@keyframes lp-rise {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-188px) scale(1.4);
+    opacity: 0;
+  }
+}
+
+/* 멈춤: 그림은 계속 천천히 움직이고, 울림만 잔잔해져요 */
+.lp__ripples,
+.lp__aura,
+.lp__chakra,
+.lp__rise {
+  transition: opacity 0.6s;
+}
+
+.lp:not(.is-playing) .lp__ripples,
+.lp:not(.is-playing) .lp__rise {
+  opacity: 0.25;
+}
+
+.lp:not(.is-playing) .lp__chakra,
+.lp:not(.is-playing) .lp__aura {
+  animation-duration: 4s;
+}
+
+/* 위 버튼 (닫기 · 좋아요): 배경이 비치는 동그라미 */
+.lp__round {
+  position: absolute;
+  top: 3px;
+  width: 49px;
+  height: 49px;
+  border-radius: 50%;
+  background: rgba(0, 30, 70, 0.14);
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lp__round:active {
+  transform: scale(0.92);
+}
+
+.lp__round--close {
+  left: 20px;
+}
+
+.lp__round--heart {
+  left: 333px;
+}
+
+.lp__round--heart path {
+  fill: #fff;
+  transition: fill 0.2s;
+}
+
+.lp__round--heart.is-on path {
+  fill: #ff39c7;
+}
+
+.lp__round--heart.is-on svg {
+  animation: lp-pop 0.35s ease-out;
+}
+
+@keyframes lp-pop {
+  50% {
+    transform: scale(1.3);
+  }
+}
+
+.lp__title {
+  position: absolute;
+  z-index: 2;
+  left: 51px;
+  top: 167px;
+  width: 300px;
+  height: 44px;
+  pointer-events: none;
+}
+
+.lp__status {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 652px;
+  translate: -50% 0;
+  height: 33px;
+  padding: 0 16px;
+  border-radius: 100px;
+  background: rgba(0, 50, 80, 0.13);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 33px;
+  letter-spacing: -0.3px;
+  white-space: nowrap;
+  animation: lp-status 0.6s ease-out;
+}
+
+@keyframes lp-status {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.lp__play {
+  position: absolute;
+  z-index: 2;
+  left: 157px;
+  top: 726px;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  transition: transform 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lp__play:active {
+  transform: scale(0.92);
+}
+
+.lp__skip {
+  position: absolute;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lp__skip img {
+  width: 28px;
+  height: 28px;
+  filter: brightness(0); /* 흰 아이콘 → 검정 (피그마) */
+}
+
+.lp__skip--back {
+  left: 97px;
+  top: 757px;
+}
+
+.lp__skip--fwd {
+  left: 277px;
+  top: 758px;
+}
+
+.lp__indicator {
+  background: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp__bg,
+  .lp__blob,
+  .lp__ripples i,
+  .lp__aura,
+  .lp__chakra,
+  .lp__rise {
     animation: none;
   }
 }

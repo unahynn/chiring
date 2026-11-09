@@ -31,6 +31,8 @@ ITEMS = [
     (V2 + 'vibe-earth', 'Earth Vibe', VIBE),
     (V2 + 'vibe-metal', 'Metal Vibe', VIBE),
     (V2 + 'lucky-signal', 'Lucky signal', 'width:280px;height:47px;font-size:36px;letter-spacing:-0.72px;color:#fff;text-align:center'),
+    # 주파수 듣는 화면 제목
+    (V2 + 'todays-lucky-signal', 'Today’s Lucky signal', 'width:300px;height:44px;font-size:33px;letter-spacing:-0.66px;color:#fff;text-align:center'),
     # 필요한 기운 확인 화면 제목 (src/data/energy.ts 의 title 과 맞춰요: need-title-<기운>)
     (V2 + 'need-title-water', '물부처의 기운', TITLE),
     (V2 + 'need-title-fire', '불부처의 기운', TITLE),

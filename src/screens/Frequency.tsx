@@ -4,7 +4,7 @@ import { hapticSuccess, hapticTick } from '../lib/haptic'
 import WishGlow, { type WishGlowHandle } from '../components/WishGlow'
 import { BackButton, CloseButton } from '../components/RoundButton'
 import { signalCards, type SignalCard } from '../data/cards'
-import { ReplayCard, ReplayList } from './FrequencyReplay'
+import { ReplayCard, ReplayList, ReplayPlayer } from './FrequencyReplay'
 import { ShaderFill, useWebGPUDevice } from '../lib/custom-effect-runtime'
 import {
   setup as setupLightRays,
@@ -42,6 +42,7 @@ export type FrequencyStep =
   // 기운 주파수 다시 듣기 → 카드 목록 → 카드 보기(뒤집으면 메세지)
   | 'replay'
   | 'replayCard'
+  | 'replayPlay'
 
 /** 아바타 원 안에 겹쳐 그릴 사진들 (피그마 크롭 그대로, 44px 원 기준) */
 type Layer = { src: string; style?: CSSProperties }
@@ -750,8 +751,18 @@ export default function Frequency({ step, onStepChange, todayNeed = 'fire', myNa
   }
   if (step === 'replayCard' && replayCard) {
     return (
-      <ReplayCard key={replayCard.id} card={replayCard} energy={replayEnergy} toName={myName} onClose={() => onStepChange('replay')} />
+      <ReplayCard
+        key={replayCard.id}
+        card={replayCard}
+        energy={replayEnergy}
+        toName={myName}
+        onClose={() => onStepChange('replay')}
+        onPlay={() => onStepChange('replayPlay')}
+      />
     )
+  }
+  if (step === 'replayPlay') {
+    return <ReplayPlayer energy={replayEnergy} onClose={() => onStepChange('replayCard')} />
   }
 
   // step === 'home'

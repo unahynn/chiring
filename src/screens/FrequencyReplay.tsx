@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import StatusBar from '../components/StatusBar'
 import { BackButton, CloseButton } from '../components/RoundButton'
 import { signalCards, type SignalCard } from '../data/cards'
@@ -6,6 +6,10 @@ import { ENERGY_META, type EnergyType } from '../data/energy'
 import { REPLAY_GIFTS } from '../data/replay'
 import { hapticTick } from '../lib/haptic'
 import { useTone } from '../lib/tone'
+import listenBg from '../assets/frequency/v2/listen-bg.webp'
+import listenTitle from '../assets/frequency/v2/todays-lucky-signal.png'
+import iconBack5 from '../assets/signal/icon-back5.png'
+import iconFwd5 from '../assets/signal/icon-fwd5.png'
 import './FrequencyReplay.css'
 
 /** 위쪽 기운 고르기 순서 (피그마: 불 · 물 · 나무 · 흙 · 금) */
@@ -75,17 +79,18 @@ export function ReplayCard({
   energy,
   toName,
   onClose,
+  onPlay,
 }: {
   card: SignalCard
   energy: EnergyType
   toName: string
   onClose: () => void
+  /** 재생하기 → 주파수 듣는 화면 */
+  onPlay: () => void
 }) {
   const gift = REPLAY_GIFTS[card.id] ?? { from: '친구', message: '' }
   const [flipped, setFlipped] = useState(false)
-  const [playing, setPlaying] = useState(false)
   const liftRef = useRef<HTMLDivElement>(null)
-  useTone(energy, playing)
 
   const flip = () => {
     setFlipped((f) => !f)
@@ -111,7 +116,7 @@ export function ReplayCard({
       </h1>
 
       <div
-        className={`replay-card__lift${playing ? ' is-playing' : ''}`}
+        className="replay-card__lift"
         ref={liftRef}
         style={
           {
@@ -140,10 +145,169 @@ export function ReplayCard({
       <button className="replay-card__hint" onClick={flip}>
         {flipped ? '눌러서 카드 확인하기' : '눌러서 메세지 확인하기'}
       </button>
-      <button className="freq__btn freq__btn--center" onClick={() => setPlaying((p) => !p)}>
-        {playing ? '일시정지' : '재생하기'}
+      <button className="freq__btn freq__btn--center" onClick={onPlay}>
+        재생하기
       </button>
       <div className="freq__indicator" />
+    </div>
+  )
+}
+
+/** 듣는 동안 바뀌는 문구 (기운별) */
+const LISTEN_LINES: Record<EnergyType, string[]> = {
+  water: ['연락 충동이 억제되는 중···', '마음의 온도를 낮추는 중···', '생각을 비워내는 중···', '차분한 물 기운이 스며드는 중···'],
+  fire: ['몸에 열정이 차오르는 중···', '움직일 힘이 생기는 중···', '불의 기운이 타오르는 중···', '지친 마음에 불을 붙이는 중···'],
+  wood: ['새로운 시작을 준비하는 중···', '합격의 싹이 자라는 중···', '나무 기운이 뻗어 나가는 중···', '마음에 새싹이 돋는 중···'],
+  metal: ['지갑이 단단해지는 중···', '흩어진 마음을 정리하는 중···', '금 기운이 모이는 중···', '통장 잔고를 지키는 중···'],
+  earth: ['마음이 차분히 가라앉는 중···', '기초를 단단히 다지는 중···', '흙 기운이 쌓이는 중···', '하나씩 쌓아 올리는 중···'],
+}
+
+/** 듣는 화면 그림은 물 기운(파랑)이라, 다른 기운은 색을 돌려서 써요 */
+const LISTEN_HUE: Record<EnergyType, number> = { water: 0, fire: 125, wood: -40, metal: -115, earth: 170 }
+
+/** 부처 몸의 빛 자리 (위에서부터 정수리 → 아래) — 그림 속 빛 위에 겹쳐서 웅웅 빛나게 */
+const CHAKRAS: { y: number; size: number; color: string }[] = [
+  { y: 354, size: 48, color: '#9ffcff' },
+  { y: 396.5, size: 32, color: '#5ff3ff' },
+  { y: 429, size: 32, color: '#5ff3ff' },
+  { y: 470, size: 36, color: '#6dff9c' },
+  { y: 509, size: 32, color: '#9ffff0' },
+  { y: 542, size: 32, color: '#9ffcff' },
+]
+
+/** 주파수 길이(초). 끝까지 들으면 충전 완료 */
+const DURATION = 40
+
+/** 주파수 듣는 화면: 배경 빛이 일렁이고, 부처 몸의 빛이 웅웅 울려요 */
+export function ReplayPlayer({ energy, onClose }: { energy: EnergyType; onClose: () => void }) {
+  const [playing, setPlaying] = useState(true)
+  const [elapsed, setElapsed] = useState(0)
+  const [lineIndex, setLineIndex] = useState(0)
+  const [liked, setLiked] = useState(false)
+  const done = elapsed >= DURATION
+  const lines = LISTEN_LINES[energy]
+  useTone(energy, playing)
+
+  // 재생 중이면 0.1초마다 진행, 끝나면 멈춰요
+  useEffect(() => {
+    if (!playing) return
+    const t = window.setInterval(() => {
+      setElapsed((e) => {
+        const next = Math.min(DURATION, e + 0.1)
+        if (next >= DURATION) setPlaying(false)
+        return next
+      })
+    }, 100)
+    return () => window.clearInterval(t)
+  }, [playing])
+
+  // 문구는 4초마다 바꿔요
+  useEffect(() => {
+    if (!playing) return
+    const t = window.setInterval(() => setLineIndex((i) => (i + 1) % lines.length), 4000)
+    return () => window.clearInterval(t)
+  }, [playing, lines.length])
+
+  const skip = (sec: number) => setElapsed((e) => Math.max(0, Math.min(DURATION, e + sec)))
+  const hue = LISTEN_HUE[energy]
+
+  return (
+    <div className={`freq lp${playing ? ' is-playing' : ''}`}>
+      {/* 움직이는 그림 (기운 색으로 돌려요) */}
+      <div className="lp__scene" aria-hidden style={hue ? { filter: `hue-rotate(${hue}deg)` } : undefined}>
+        <img className="lp__bg" src={listenBg} alt="" />
+        {/* 배경 빛 덩어리들이 천천히 풀리며 흘러가요 */}
+        <div className="lp__flow">
+          <i className="lp__blob lp__blob--a" />
+          <i className="lp__blob lp__blob--b" />
+          <i className="lp__blob lp__blob--c" />
+          <i className="lp__blob lp__blob--d" />
+        </div>
+        {/* 부처 가운데서 빛 물결이 울리며 퍼져요 */}
+        <div className="lp__ripples">
+          <i />
+          <i />
+          <i />
+        </div>
+        <i className="lp__aura" />
+        {CHAKRAS.map((c, i) => (
+          <i
+            key={c.y}
+            className="lp__chakra"
+            style={
+              {
+                top: c.y,
+                width: c.size,
+                height: c.size,
+                '--c': c.color,
+                animationDelay: `${-i * 0.22}s`,
+              } as CSSProperties
+            }
+          />
+        ))}
+        {/* 아래에서 정수리로 빛이 올라가요 */}
+        <i className="lp__rise" />
+      </div>
+
+      <StatusBar />
+      <header className="freq__gnb">
+        <button className="lp__round lp__round--close" onClick={onClose} aria-label="닫기">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+            <path
+              d="M0.922852 0.923828L14.9229 14.9238M14.9229 0.923828L0.922852 14.9238"
+              stroke="white"
+              strokeWidth="1.84593"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+        <button
+          className={`lp__round lp__round--heart${liked ? ' is-on' : ''}`}
+          onClick={() => {
+            setLiked((l) => !l)
+            hapticTick()
+          }}
+          aria-label="좋아요"
+          aria-pressed={liked}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden>
+            <path d="M12 20.7s-8.5-4.9-8.5-11.1A4.6 4.6 0 0 1 12 6.9a4.6 4.6 0 0 1 8.5 2.7c0 6.2-8.5 11.1-8.5 11.1Z" />
+          </svg>
+        </button>
+      </header>
+      <img className="lp__title" src={listenTitle} alt="Today's Lucky signal" />
+
+      <p key={done ? 'done' : lineIndex} className="lp__status">
+        {done ? '주파수 기운 충전 완료!' : lines[lineIndex]}
+      </p>
+
+      <button className="lp__skip lp__skip--back" onClick={() => skip(-5)} aria-label="5초 뒤로">
+        <img src={iconBack5} alt="" />
+      </button>
+      <button
+        className="lp__play"
+        onClick={() => {
+          if (done) setElapsed(0)
+          setPlaying((p) => !p || done)
+        }}
+        aria-label={playing ? '일시정지' : '재생'}
+      >
+        {playing ? (
+          <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden>
+            <rect x="8" y="6" width="5" height="20" rx="1.5" fill="#000" />
+            <rect x="19" y="6" width="5" height="20" rx="1.5" fill="#000" />
+          </svg>
+        ) : (
+          <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden>
+            <path d="M10 6.5v19a1 1 0 0 0 1.5.86l15-9.5a1 1 0 0 0 0-1.72l-15-9.5A1 1 0 0 0 10 6.5Z" fill="#000" />
+          </svg>
+        )}
+      </button>
+      <button className="lp__skip lp__skip--fwd" onClick={() => skip(5)} aria-label="5초 앞으로">
+        <img src={iconFwd5} alt="" />
+      </button>
+      <div className="freq__indicator lp__indicator" />
     </div>
   )
 }
